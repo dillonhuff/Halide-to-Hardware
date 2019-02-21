@@ -84,6 +84,7 @@ string CodeGen_VHLS_Base::print_stencil_pragma(const string &name) {
 }
 
 void CodeGen_VHLS_Base::visit(const Call *op) {
+  stream << "// oh hai i herd u wer totally in to lolcats" << "\n";
   if (op->name == "linebuffer") {
         //IR: linebuffer(buffered.stencil_update.stream, buffered.stencil.stream, extent_0[, extent_1, ...])
         //C: linebuffer<extent_0[, extent_1, ...]>(buffered.stencil_update.stream, buffered.stencil.stream)
