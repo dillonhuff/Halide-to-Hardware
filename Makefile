@@ -166,7 +166,7 @@ RTTI_CXX_FLAGS=$(if $(WITH_RTTI), , -fno-rtti )
 COREIR_DIR ?=/Users/dillon/CppWorkspace/coreir
 COREIR_CXX_FLAGS = -I$(COREIR_DIR)/include -fexceptions
 COREIR_LD_FLAGS = -L$(COREIR_DIR)/lib -Wl,-rpath,$(COREIR_DIR)/lib -lcoreir-commonlib -lcoreir -lcoreirsim
-#COMMON_LD_FLAGS += $(COREIR_LD_FLAGS)
+COMMON_LD_FLAGS += $(COREIR_LD_FLAGS)
 
 CXX_VERSION = $(shell $(CXX) --version | head -n1)
 CXX_WARNING_FLAGS = -Wall -Wno-unused-function -Wcast-qual -Wignored-qualifiers -Wno-comment -Wsign-compare -Wno-unknown-warning-option -Wno-psabi
