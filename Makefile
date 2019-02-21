@@ -162,7 +162,8 @@ WITH_RTTI ?= $(if $(LLVM_HAS_NO_RTTI),, not-empty)
 RTTI_CXX_FLAGS=$(if $(WITH_RTTI), , -fno-rtti )
 
 # Compiling for CoreIR requires some extra links
-COREIR_DIR ?= $(ROOT_DIR)/../coreir
+# $(ROOT_DIR)/../coreir
+COREIR_DIR ?=/Users/dillon/CppWorkspace/coreir
 COREIR_CXX_FLAGS = -I$(COREIR_DIR)/include -fexceptions
 COREIR_LD_FLAGS = -L$(COREIR_DIR)/lib -Wl,-rpath,$(COREIR_DIR)/lib -lcoreir-commonlib -lcoreir -lcoreirsim
 #COMMON_LD_FLAGS += $(COREIR_LD_FLAGS)
