@@ -8,4 +8,11 @@ def run_cmd(cmd):
     assert(res == 0)
 
 run_cmd('cd ./apps/hardware_benchmarks/apps/pointwise/; make design-vhls')
-run_cmd('clang++ -O1 -c -S -emit-llvm ./apps/hardware_benchmarks/apps/pointwise/bin/vhls_target.cpp  -I ./apps/hardware_benchmarks/apps/pointwise/')
+
+# Generate ll file for examination
+run_cmd('clang++ -std=c++11 -O1 -c -S -emit-llvm ./apps/hardware_benchmarks/apps/pointwise/bin/vhls_target.cpp  -I ./apps/hardware_benchmarks/apps/pointwise/')
+
+# Compile C++ testbench
+run_cmd('clang++ -std=c++11 -O1 ./apps/hardware_benchmarks/apps/pointwise/target_tb.cpp ./apps/hardware_benchmarks/apps/pointwise/bin/vhls_target.cpp  -I ./apps/hardware_benchmarks/apps/pointwise/')
+# Run C++ testbench
+run_cmd('./a.out')
