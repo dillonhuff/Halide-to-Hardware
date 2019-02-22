@@ -75,8 +75,8 @@ const string vhls_header_includes =
     "#include <assert.h>\n"
     "#include <stdio.h>\n"
     "#include <stdlib.h>\n"
-    "#include <hls_stream.h>\n"
-    "#include \"Stencil.h\"\n";
+    "#include \"dhls_stream.h\"\n"
+    "#include \"dhls_stencil.h\"\n";
 }
 
 void CodeGen_VHLS_Target::init_module() {
@@ -97,8 +97,8 @@ void CodeGen_VHLS_Target::init_module() {
 
     // initialize the source file
     src_stream << "#include \"" << target_name << ".h\"\n\n";
-    src_stream << "#include \"Linebuffer.h\"\n"
-               << "#include \"halide_math.h\"\n";
+    //src_stream << "#include \"Linebuffer.h\"\n"
+    //src_stream << "#include \"halide_math.h\"\n";
 
 }
 
