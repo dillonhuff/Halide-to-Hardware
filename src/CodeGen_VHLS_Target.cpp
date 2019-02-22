@@ -213,7 +213,7 @@ void CodeGen_VHLS_Target::CodeGen_VHLS_C::add_kernel(Stmt stmt,
         stream << "\n";
 
         // print body
-        print(stmt);
+        // print(stmt);
 
         close_scope("kernel hls_target" + print_name(name));
     }
