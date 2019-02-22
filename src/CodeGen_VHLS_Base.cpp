@@ -320,6 +320,9 @@ void CodeGen_VHLS_Base::visit(const Call *op) {
     stencil_type.type = Stencil_Type::StencilContainerType::Stencil;
     string stencil_name = "tmp_stencil";
     do_indent();
+
+    // This is the read from the input stream to a temporary stencil
+    // that is being used to distribute
     stream << "Packed" << print_stencil_type(stencil_type) << ' '
            << print_name(stencil_name) << " = "
            << print_name(stream_name) << ".read();\n";
