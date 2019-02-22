@@ -109,7 +109,7 @@ struct PackedStencil {
 //         return value.range(hi, lo);
 //     }
 
-    inline T& operator()(size_t index_0, size_t index_1 = 0, size_t index_2 = 0, size_t index_3 = 0) {
+    T& operator()(size_t index_0, size_t index_1 = 0, size_t index_2 = 0, size_t index_3 = 0) {
 #pragma HLS INLINE
       //assert(index_0 < EXTENT_0 && index_1 < EXTENT_1 && index_2 < EXTENT_2 && index_3 < EXTENT_3);
         //return placeHolder;
@@ -168,7 +168,7 @@ struct AxiPackedStencil {
 
     /** writer
      */
-    inline T& operator()(size_t index_0, size_t index_1 = 0, size_t index_2 = 0, size_t index_3 = 0) {
+    T& operator()(size_t index_0, size_t index_1 = 0, size_t index_2 = 0, size_t index_3 = 0) {
 #pragma HLS INLINE
       //assert(index_0 < EXTENT_0 && index_1 < EXTENT_1 && index_2 < EXTENT_2 && index_3 < EXTENT_3);
         //return placeHolder;
@@ -177,7 +177,7 @@ struct AxiPackedStencil {
 
     /** reader
      */
-    inline const T& operator()(size_t index_0, size_t index_1 = 0, size_t index_2 = 0, size_t index_3 = 0) const {
+    const T& operator()(size_t index_0, size_t index_1 = 0, size_t index_2 = 0, size_t index_3 = 0) const {
 #pragma HLS INLINE
       //assert(index_0 < EXTENT_0 && index_1 < EXTENT_1 && index_2 < EXTENT_2 && index_3 < EXTENT_3);
         return value[index_3][index_2][index_1][index_0];
@@ -220,7 +220,7 @@ public:
 
     /** writer
      */
-    inline T& operator()(size_t index_0, size_t index_1 = 0, size_t index_2 = 0, size_t index_3 = 0) {
+    T& operator()(size_t index_0, size_t index_1 = 0, size_t index_2 = 0, size_t index_3 = 0) {
 #pragma HLS INLINE
       //assert(index_0 < EXTENT_0 && index_1 < EXTENT_1 && index_2 < EXTENT_2 && index_3 < EXTENT_3);
         //return placeHolder;
@@ -229,7 +229,7 @@ public:
 
     /** reader
      */
-    inline const T& operator()(size_t index_0, size_t index_1 = 0, size_t index_2 = 0, size_t index_3 = 0) const {
+    const T& operator()(size_t index_0, size_t index_1 = 0, size_t index_2 = 0, size_t index_3 = 0) const {
 #pragma HLS INLINE
       //assert(index_0 < EXTENT_0 && index_1 < EXTENT_1 && index_2 < EXTENT_2 && index_3 < EXTENT_3);
         return value[index_3][index_2][index_1][index_0];
