@@ -111,7 +111,7 @@ struct PackedStencil {
 
     inline T& operator()(size_t index_0, size_t index_1 = 0, size_t index_2 = 0, size_t index_3 = 0) {
 #pragma HLS INLINE
-        assert(index_0 < EXTENT_0 && index_1 < EXTENT_1 && index_2 < EXTENT_2 && index_3 < EXTENT_3);
+      //assert(index_0 < EXTENT_0 && index_1 < EXTENT_1 && index_2 < EXTENT_2 && index_3 < EXTENT_3);
         //return placeHolder;
         return value[index_3][index_2][index_1][index_0];
     }
@@ -170,7 +170,7 @@ struct AxiPackedStencil {
      */
     inline T& operator()(size_t index_0, size_t index_1 = 0, size_t index_2 = 0, size_t index_3 = 0) {
 #pragma HLS INLINE
-        assert(index_0 < EXTENT_0 && index_1 < EXTENT_1 && index_2 < EXTENT_2 && index_3 < EXTENT_3);
+      //assert(index_0 < EXTENT_0 && index_1 < EXTENT_1 && index_2 < EXTENT_2 && index_3 < EXTENT_3);
         //return placeHolder;
         return value[index_3][index_2][index_1][index_0];
     }
@@ -179,7 +179,7 @@ struct AxiPackedStencil {
      */
     inline const T& operator()(size_t index_0, size_t index_1 = 0, size_t index_2 = 0, size_t index_3 = 0) const {
 #pragma HLS INLINE
-        assert(index_0 < EXTENT_0 && index_1 < EXTENT_1 && index_2 < EXTENT_2 && index_3 < EXTENT_3);
+      //assert(index_0 < EXTENT_0 && index_1 < EXTENT_1 && index_2 < EXTENT_2 && index_3 < EXTENT_3);
         return value[index_3][index_2][index_1][index_0];
     }
   
@@ -222,7 +222,7 @@ public:
      */
     inline T& operator()(size_t index_0, size_t index_1 = 0, size_t index_2 = 0, size_t index_3 = 0) {
 #pragma HLS INLINE
-        assert(index_0 < EXTENT_0 && index_1 < EXTENT_1 && index_2 < EXTENT_2 && index_3 < EXTENT_3);
+      //assert(index_0 < EXTENT_0 && index_1 < EXTENT_1 && index_2 < EXTENT_2 && index_3 < EXTENT_3);
         //return placeHolder;
         return value[index_3][index_2][index_1][index_0];
     }
@@ -231,7 +231,7 @@ public:
      */
     inline const T& operator()(size_t index_0, size_t index_1 = 0, size_t index_2 = 0, size_t index_3 = 0) const {
 #pragma HLS INLINE
-        assert(index_0 < EXTENT_0 && index_1 < EXTENT_1 && index_2 < EXTENT_2 && index_3 < EXTENT_3);
+      //assert(index_0 < EXTENT_0 && index_1 < EXTENT_1 && index_2 < EXTENT_2 && index_3 < EXTENT_3);
         return value[index_3][index_2][index_1][index_0];
     }
 
