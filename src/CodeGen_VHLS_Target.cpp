@@ -76,6 +76,7 @@ const string vhls_header_includes =
     "#include <stdio.h>\n"
     "#include <stdlib.h>\n"
     "#include \"dhls_stream.h\"\n"
+    "#include \"gen_classes.h\"\n"
     "#include \"dhls_stencil.h\"\n";
 }
 
