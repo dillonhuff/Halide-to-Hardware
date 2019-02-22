@@ -27,37 +27,71 @@ string CodeGen_VHLS_Base::print_stencil_type(Stencil_Type stencil_type) {
 
     switch(stencil_type.type) {
     case Stencil_Type::StencilContainerType::Stencil :
-        oss << "Stencil<" << print_type(stencil_type.elemType);
+        oss << "Stencil_" << print_type(stencil_type.elemType);
 
         for(const auto &range : stencil_type.bounds) {
             internal_assert(is_one(simplify(range.min == 0)));
-            oss << ", " << range.extent;
+            oss << "_" << range.extent;
         }
-        oss << ">";
+        oss << "_";
         break;
     case Stencil_Type::StencilContainerType::Stream :
-        oss << "hls::stream<PackedStencil<";
+        oss << "hls_stream_PackedStencil_";
         oss << print_type(stencil_type.elemType);
 
         for(const auto &range : stencil_type.bounds) {
             internal_assert(is_one(simplify(range.min == 0)));
-            oss << ", " << range.extent;
+            oss << "_" << range.extent;
         }
-        oss << "> >";
+        oss << "__";
         break;
     case Stencil_Type::StencilContainerType::AxiStream :
-        oss << "hls::stream<AxiPackedStencil<";
+        oss << "hls_stream_AxiPackedStencil_";
         oss << print_type(stencil_type.elemType);
 
         for(const auto &range : stencil_type.bounds) {
             internal_assert(is_one(simplify(range.min == 0)));
-            oss << ", " << range.extent;
+            oss << "_" << range.extent;
         }
-        oss << "> >";
+        oss << "__";
         break;
     default: internal_error;
     }
     return oss.str();
+    
+    // switch(stencil_type.type) {
+    // case Stencil_Type::StencilContainerType::Stencil :
+    //     oss << "Stencil<" << print_type(stencil_type.elemType);
+
+    //     for(const auto &range : stencil_type.bounds) {
+    //         internal_assert(is_one(simplify(range.min == 0)));
+    //         oss << ", " << range.extent;
+    //     }
+    //     oss << ">";
+    //     break;
+    // case Stencil_Type::StencilContainerType::Stream :
+    //     oss << "hls::stream<PackedStencil<";
+    //     oss << print_type(stencil_type.elemType);
+
+    //     for(const auto &range : stencil_type.bounds) {
+    //         internal_assert(is_one(simplify(range.min == 0)));
+    //         oss << ", " << range.extent;
+    //     }
+    //     oss << "> >";
+    //     break;
+    // case Stencil_Type::StencilContainerType::AxiStream :
+    //     oss << "hls::stream<AxiPackedStencil<";
+    //     oss << print_type(stencil_type.elemType);
+
+    //     for(const auto &range : stencil_type.bounds) {
+    //         internal_assert(is_one(simplify(range.min == 0)));
+    //         oss << ", " << range.extent;
+    //     }
+    //     oss << "> >";
+    //     break;
+    // default: internal_error;
+    // }
+    // return oss.str();
 }
 
 string CodeGen_VHLS_Base::print_name(const string &name) {
@@ -158,11 +192,13 @@ void CodeGen_VHLS_Base::visit(const Call *op) {
       }
       stream << ") {\n";
       do_indent();
-      stream << ' ' << print_name(packed_stencil_name) << ".last = 1;\n";
+      //stream << ' ' << print_name(packed_stencil_name) << ".last = 1;\n";
+      stream << ' ' << print_name(packed_stencil_name) << ".set_last(1);\n";
       do_indent();
       stream << "} else {\n";
       do_indent();
-      stream << ' ' << print_name(packed_stencil_name) << ".last = 0;\n";
+      //stream << ' ' << print_name(packed_stencil_name) << ".last = 0;\n";
+      stream << ' ' << print_name(packed_stencil_name) << ".set_last(0);\n";
       do_indent();
       stream << "}\n";
 
