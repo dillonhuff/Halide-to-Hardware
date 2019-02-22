@@ -103,7 +103,7 @@ void CodeGen_VHLS_Base::visit(const Call *op) {
     stream << ">(" << a0 << ", " << a1 << ");\n";
     id = "0"; // skip evaluation
   } else if (op->name == "write_stream") {
-    assert(false);
+    //assert(false);
     if (op->args.size() == 2) {
       // normal case
       // IR: write_stream(buffered.stencil_update.stream, buffered.stencil_update)
@@ -111,6 +111,7 @@ void CodeGen_VHLS_Base::visit(const Call *op) {
       string a0 = print_expr(op->args[0]);
       string a1 = print_expr(op->args[1]);
       do_indent();
+      stream << "// Normal write stream case" << endl;
       stream << a0 << ".write(" << a1 << ");\n";
       id = "0"; // skip evaluation
     } else {
@@ -136,6 +137,8 @@ void CodeGen_VHLS_Base::visit(const Call *op) {
 
       // emit code declaring the packed stencil
       do_indent();
+      stream << "// Dag output kernel" << endl;
+
       stream << "AxiPacked" << print_stencil_type(stencil_type) << " "
              << print_name(packed_stencil_name) << " = "
              << print_name(stencil_name) << ";\n";
@@ -170,13 +173,17 @@ void CodeGen_VHLS_Base::visit(const Call *op) {
       id = "0"; // skip evaluation
     }
   } else if (op->name == "read_stream") {
-    assert(false);
+    //assert(false);
     internal_assert(op->args.size() == 2 || op->args.size() == 3);
     string a1 = print_expr(op->args[1]);
 
     const Variable *stream_name_var = op->args[0].as<Variable>();
+    
     internal_assert(stream_name_var);
     string stream_name = stream_name_var->name;
+
+    stream << "// reading stream " << stream_name << endl;
+    
     if (op->args.size() == 3) {
       // stream name is maggled with the consumer name
       const StringImm *consumer_imm = op->args[2].as<StringImm>();
@@ -411,7 +418,7 @@ void CodeGen_VHLS_Base::visit(const Realize *op) {
 	stream << ") = 0;\n";
 
 
-        // op->body.accept(this);
+        op->body.accept(this);
 
         // We didn't generate free stmt inside for stream type
         allocations.pop(op->name);
@@ -423,7 +430,7 @@ void CodeGen_VHLS_Base::visit(const Realize *op) {
 }
 
 void CodeGen_VHLS_Base::visit(const Provide *op) {
-  assert(false);
+  //assert(false);
     if (ends_with(op->name, ".stencil") ||
         ends_with(op->name, ".stencil_update")) {
         // IR: buffered.stencil_update(1, 2, 3) =
@@ -436,6 +443,8 @@ void CodeGen_VHLS_Base::visit(const Provide *op) {
         string id_value = print_expr(op->values[0]);
 
         do_indent();
+        stream << "// Providing stencil or stencil update " << op->name << endl;
+
         stream << print_name(op->name) << "(";
 
         for(size_t i = 0; i < op->args.size(); i++) {
