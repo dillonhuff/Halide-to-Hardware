@@ -366,7 +366,10 @@ void CodeGen_VHLS_Base::visit(const Realize *op) {
     if (ends_with(op->name, ".stream")) {
 
       stream << "// realize stream " << op->name << endl;
-        // // create a stream type
+
+      assert(false);
+
+      // // create a stream type
         // internal_assert(op->types.size() == 1);
         // allocations.push(op->name, {op->types[0]});
         // Stencil_Type stream_type({Stencil_Type::StencilContainerType::Stream,
@@ -389,30 +392,30 @@ void CodeGen_VHLS_Base::visit(const Realize *op) {
                ends_with(op->name, ".stencil_update")) {
 
       stream << "// realize stencil or stencil update " << op->name << endl;
-        // // create a stencil type
-        // internal_assert(op->types.size() == 1);
-        // allocations.push(op->name, {op->types[0]});
-        // Stencil_Type stype({Stencil_Type::StencilContainerType::Stencil, op->types[0], op->bounds, 1});
-        // stencils.push(op->name, stype);
+        // create a stencil type
+        internal_assert(op->types.size() == 1);
+        allocations.push(op->name, {op->types[0]});
+        Stencil_Type stype({Stencil_Type::StencilContainerType::Stencil, op->types[0], op->bounds, 1});
+        stencils.push(op->name, stype);
 
-        // do_indent();
-        // // Stencil<uint16_t, 1, 1, 1> conv1_stencil_update;
-        // stream << print_stencil_type(stype) << ' ' << print_name(op->name) << ";\n";
-        // stream << print_stencil_pragma(op->name);
+        do_indent();
+        // Stencil<uint16_t, 1, 1, 1> conv1_stencil_update;
+        stream << print_stencil_type(stype) << ' ' << print_name(op->name) << ";\n";
+        stream << print_stencil_pragma(op->name);
 
-	// // INIT
-	// stream << print_name(op->name) << "(0";
-	// for (const auto &range : op->bounds) {
-	//   stream << ", " << range.min;
-	// }
-	// stream << ") = 0;\n";
+	// INIT
+	stream << print_name(op->name) << "(0";
+	for (const auto &range : op->bounds) {
+	  stream << ", " << range.min;
+	}
+	stream << ") = 0;\n";
 
 
         // op->body.accept(this);
 
-        // // We didn't generate free stmt inside for stream type
-        // allocations.pop(op->name);
-        // stencils.pop(op->name);
+        // We didn't generate free stmt inside for stream type
+        allocations.pop(op->name);
+        stencils.pop(op->name);
     } else {
       stream << "// Standard c realization" << endl;
       CodeGen_C::visit(op);

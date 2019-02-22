@@ -159,26 +159,28 @@ struct AxiPackedStencil {
 
 // /** multi-dimension (up-to 4 dimensions) stencil struct
 //  */
-// template <typename T, size_t EXTENT_0, size_t EXTENT_1 = 1, size_t EXTENT_2 = 1, size_t EXTENT_3 = 1>
-// struct Stencil {
-// public:
+template <typename T, size_t EXTENT_0, size_t EXTENT_1 = 1, size_t EXTENT_2 = 1, size_t EXTENT_3 = 1>
+struct Stencil {
+public:
+  T placeHolder;
 //     T value[EXTENT_3][EXTENT_2][EXTENT_1][EXTENT_0];
 
-//     /** writer
-//      */
-//     inline T& operator()(size_t index_0, size_t index_1 = 0, size_t index_2 = 0, size_t index_3 = 0) {
-// #pragma HLS INLINE
-//         assert(index_0 < EXTENT_0 && index_1 < EXTENT_1 && index_2 < EXTENT_2 && index_3 < EXTENT_3);
-//         return value[index_3][index_2][index_1][index_0];
-//     }
+    /** writer
+     */
+    inline T& operator()(size_t index_0, size_t index_1 = 0, size_t index_2 = 0, size_t index_3 = 0) {
+#pragma HLS INLINE
+        assert(index_0 < EXTENT_0 && index_1 < EXTENT_1 && index_2 < EXTENT_2 && index_3 < EXTENT_3);
+        return placeHolder;
+        //return value[index_3][index_2][index_1][index_0];
+    }
 
-//     /** reader
-//      */
-//     inline const T& operator()(size_t index_0, size_t index_1 = 0, size_t index_2 = 0, size_t index_3 = 0) const {
-// #pragma HLS INLINE
-//         assert(index_0 < EXTENT_0 && index_1 < EXTENT_1 && index_2 < EXTENT_2 && index_3 < EXTENT_3);
-//         return value[index_3][index_2][index_1][index_0];
-//     }
+    /** reader
+     */
+    inline const T& operator()(size_t index_0, size_t index_1 = 0, size_t index_2 = 0, size_t index_3 = 0) const {
+#pragma HLS INLINE
+        assert(index_0 < EXTENT_0 && index_1 < EXTENT_1 && index_2 < EXTENT_2 && index_3 < EXTENT_3);
+        return placeHolder; //value[index_3][index_2][index_1][index_0];
+    }
 
 //     // convert to PackedStencil
 //     operator PackedStencil<T, EXTENT_0, EXTENT_1, EXTENT_2, EXTENT_3>() {
@@ -206,7 +208,7 @@ struct AxiPackedStencil {
 //         PackedStencil<T, EXTENT_0, EXTENT_1, EXTENT_2, EXTENT_3> res = *this;
 //         return (AxiPackedStencil<T, EXTENT_0, EXTENT_1, EXTENT_2, EXTENT_3>)res;
 //     }
-// };
+};
 
 // #ifndef HALIDE_ATTRIBUTE_ALIGN
 //   #ifdef _MSC_VER
