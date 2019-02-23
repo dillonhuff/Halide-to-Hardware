@@ -10,6 +10,7 @@ def axi_stencil_name(typename, e0, e1):
 def gen_stream(typename):
     s_name = ''
     cdef = 'class ' + 'hls_stream_' + typename  + '_ {' + '\n'
+    cdef += '\t{0} elems[1000];\n'.format(typename)
     cdef += '  public:\n'
     cdef += '\t{0} read();\n'.format(typename)
     cdef += '\tvoid write({0});\n'.format(typename)
@@ -35,6 +36,7 @@ def gen_axi_packed_stencil(typename, e0, e1):
     axi_pre = 'AxiPackedStencil'
     sname = stencil_name(axi_pre, typename, e0, e1)
     cdef = 'class ' + sname  + ' {' + '\n'
+    cdef += '\t{0} elems[{1}*{2}];\n'.format(typename, e0, e1)    
     cdef += '  public:\n'
     cdef += '\tvoid set_last(const int);\n'
     cdef += '\t{0} operator()(const size_t e0=0, const size_t e1=0, const size_t e2=0);\n'.format(typename)
@@ -48,6 +50,7 @@ def gen_packed_stencil(typename, e0, e1):
     axi_pre = 'PackedStencil'
     sname = stencil_name(axi_pre, typename, e0, e1)
     cdef = 'class ' + sname  + ' {' + '\n'
+    cdef += '\t{0} elems[{1}*{2}];\n'.format(typename, e0, e1)        
     cdef += '  public:\n'
     #cdef += '\t{0}({1}&);\n'.format(sname, stencil_name('AxiPackedStencil', typename, e0, e1))
     cdef += '\toperator {0}();\n'.format(stencil_name('AxiPackedStencil', typename, e0, e1))    
@@ -59,9 +62,11 @@ def gen_packed_stencil(typename, e0, e1):
 def gen_stencil(typename, e0, e1):
     axi_pre = 'Stencil'
     cdef = 'class ' + stencil_name(axi_pre, typename, e0, e1)  + ' {' + '\n'
+    cdef += '\t{0} elems[{1}*{2}];\n'.format(typename, e0, e1)            
     cdef += '  public:\n'
     cdef += '\tvoid set_last(const int);\n'
     cdef += '\t{0} operator()(const size_t e0=0, const size_t e1=0, const size_t e2=0);\n'.format(typename)
+    cdef += '\tvoid write({0}, const size_t e0=0, const size_t e1=0, const size_t e2=0);\n'.format(typename)
     cdef += '\toperator {0}();\n'.format(stencil_name('AxiPackedStencil', typename, e0, e1))        
     cdef += '};\n\n'
     return cdef

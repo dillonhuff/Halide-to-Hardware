@@ -447,11 +447,18 @@ void CodeGen_VHLS_Base::visit(const Realize *op) {
         stream << print_stencil_pragma(op->name);
 
 	// INIT
-	stream << print_name(op->name) << "(0";
+        // Why only write the bounds?
+	stream << print_name(op->name) << ".write(0, 0";
 	for (const auto &range : op->bounds) {
 	  stream << ", " << range.min;
 	}
-	stream << ") = 0;\n";
+	stream << ");\n";
+
+	// stream << print_name(op->name) << "(0";
+	// for (const auto &range : op->bounds) {
+	//   stream << ", " << range.min;
+	// }
+	// stream << ") = 0;\n";
 
 
         op->body.accept(this);
