@@ -481,14 +481,21 @@ void CodeGen_VHLS_Base::visit(const Provide *op) {
         do_indent();
         stream << "// Providing stencil or stencil update " << op->name << endl;
 
-        stream << print_name(op->name) << "(";
-
+        //stream << print_name(op->name) << "(";
+        stream << print_name(op->name) << ".write(";
+        stream << id_value;
         for(size_t i = 0; i < op->args.size(); i++) {
+            stream << ", ";            
+
             stream << args_indices[i];
-            if (i != op->args.size() - 1)
-                stream << ", ";
+
+            // if (i != op->args.size() - 1) {
+            //     stream << ", ";
+            // }
         }
-        stream << ") = " << id_value << ";\n";
+
+        stream << ");\n";
+        //stream << ") = " << id_value << ";\n";
 
         cache.clear();
     } else {

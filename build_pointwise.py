@@ -11,7 +11,7 @@ def gen_stream(typename):
     s_name = ''
     cdef = 'class ' + 'hls_stream_' + typename  + '_ {' + '\n'
     cdef += '  public:\n'
-    cdef += '\t{0}& read();\n'.format(typename)
+    cdef += '\t{0} read();\n'.format(typename)
     cdef += '\tvoid write({0});\n'.format(typename)
     cdef += '};\n\n'
     return cdef
@@ -37,7 +37,7 @@ def gen_axi_packed_stencil(typename, e0, e1):
     cdef = 'class ' + sname  + ' {' + '\n'
     cdef += '  public:\n'
     cdef += '\tvoid set_last(const int);\n'
-    cdef += '\t{0}& operator()(const size_t e0=0, const size_t e1=0, const size_t e2=0);\n'.format(typename)
+    cdef += '\t{0} operator()(const size_t e0=0, const size_t e1=0, const size_t e2=0);\n'.format(typename)
     #cdef += '\t{0}({1}&);\n'.format(sname, stencil_name('PackedStencil', typename, e0, e1))    
     cdef += '\toperator {0}();\n'.format(stencil_name('PackedStencil', typename, e0, e1))
     cdef += '\toperator {0}();\n'.format(stencil_name('Stencil', typename, e0, e1))    
@@ -52,7 +52,7 @@ def gen_packed_stencil(typename, e0, e1):
     #cdef += '\t{0}({1}&);\n'.format(sname, stencil_name('AxiPackedStencil', typename, e0, e1))
     cdef += '\toperator {0}();\n'.format(stencil_name('AxiPackedStencil', typename, e0, e1))    
     cdef += '\tvoid set_last(const int);\n'
-    cdef += '\t{0}& operator()(const size_t e0=0, const size_t e1=0, const size_t e2=0);\n'.format(typename)
+    cdef += '\t{0} operator()(const size_t e0=0, const size_t e1=0, const size_t e2=0);\n'.format(typename)
     cdef += '};\n\n'
     return cdef
 
@@ -61,7 +61,7 @@ def gen_stencil(typename, e0, e1):
     cdef = 'class ' + stencil_name(axi_pre, typename, e0, e1)  + ' {' + '\n'
     cdef += '  public:\n'
     cdef += '\tvoid set_last(const int);\n'
-    cdef += '\t{0}& operator()(const size_t e0=0, const size_t e1=0, const size_t e2=0);\n'.format(typename)
+    cdef += '\t{0} operator()(const size_t e0=0, const size_t e1=0, const size_t e2=0);\n'.format(typename)
     cdef += '\toperator {0}();\n'.format(stencil_name('AxiPackedStencil', typename, e0, e1))        
     cdef += '};\n\n'
     return cdef
