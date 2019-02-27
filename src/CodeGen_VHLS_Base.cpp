@@ -121,7 +121,8 @@ void CodeGen_VHLS_Base::visit(const Call *op) {
 
   //stream << "// oh hai i herd u wer totally in to lolcats" << "\n";
   if (op->name == "linebuffer") {
-    assert(false);
+    //assert(false);
+    stream << "// Now outputting a linebuffer" << endl;
     //IR: linebuffer(buffered.stencil_update.stream, buffered.stencil.stream, extent_0[, extent_1, ...])
     //C: linebuffer<extent_0[, extent_1, ...]>(buffered.stencil_update.stream, buffered.stencil.stream)
     internal_assert(op->args.size() >= 3);
@@ -227,7 +228,8 @@ void CodeGen_VHLS_Base::visit(const Call *op) {
       stream_name += ".to." + consumer_imm->value;
     }
     do_indent();
-    stream << a1 << " = " << print_name(stream_name) << ".read();\n";
+    //stream << a1 << " = " << print_name(stream_name) << ".read();\n";
+    stream << a1 << ".copy(" << print_name(stream_name) << ".read());\n";
     id = "0"; // skip evaluation
   } else if (ends_with(op->name, ".stencil") ||
              ends_with(op->name, ".stencil_update")) {
@@ -238,7 +240,7 @@ void CodeGen_VHLS_Base::visit(const Call *op) {
     for(size_t i = 0; i < op->args.size(); i++)
       args_indices[i] = print_expr(op->args[i]);
 
-    rhs << print_name(op->name) << "(";
+    rhs << print_name(op->name) << ".get(";
     for(size_t i = 0; i < op->args.size(); i++) {
       rhs << args_indices[i];
       if (i != op->args.size() - 1)
@@ -410,26 +412,26 @@ void CodeGen_VHLS_Base::visit(const Realize *op) {
 
       stream << "// realize stream " << op->name << endl;
 
-      assert(false);
+      //assert(false);
 
-      // // create a stream type
-        // internal_assert(op->types.size() == 1);
-        // allocations.push(op->name, {op->types[0]});
-        // Stencil_Type stream_type({Stencil_Type::StencilContainerType::Stream,
-        //             op->types[0], op->bounds, 1});
-        // stencils.push(op->name, stream_type);
+      // create a stream type
+        internal_assert(op->types.size() == 1);
+        allocations.push(op->name, {op->types[0]});
+        Stencil_Type stream_type({Stencil_Type::StencilContainerType::Stream,
+                    op->types[0], op->bounds, 1});
+        stencils.push(op->name, stream_type);
 
-        // // emits the declaration for the stream
-        // do_indent();
-        // stream << print_stencil_type(stream_type) << ' ' << print_name(op->name) << ";\n";
-        // stream << print_stencil_pragma(op->name);
+        // emits the declaration for the stream
+        do_indent();
+        stream << print_stencil_type(stream_type) << ' ' << print_name(op->name) << ";\n";
+        stream << print_stencil_pragma(op->name);
 
-        // // traverse down
-        // op->body.accept(this);
+        // traverse down
+        op->body.accept(this);
 
-        // // We didn't generate free stmt inside for stream type
-        // allocations.pop(op->name);
-        // stencils.pop(op->name);
+        // We didn't generate free stmt inside for stream type
+        allocations.pop(op->name);
+        stencils.pop(op->name);
 
     } else if (ends_with(op->name, ".stencil") ||
                ends_with(op->name, ".stencil_update")) {
@@ -448,7 +450,7 @@ void CodeGen_VHLS_Base::visit(const Realize *op) {
 
 	// INIT
         // Why only write the bounds?
-	stream << print_name(op->name) << ".write(0, 0";
+	stream << print_name(op->name) << ".set(0, 0";
 	for (const auto &range : op->bounds) {
 	  stream << ", " << range.min;
 	}
@@ -489,7 +491,7 @@ void CodeGen_VHLS_Base::visit(const Provide *op) {
         stream << "// Providing stencil or stencil update " << op->name << endl;
 
         //stream << print_name(op->name) << "(";
-        stream << print_name(op->name) << ".write(";
+        stream << print_name(op->name) << ".set(";
         stream << id_value;
         for(size_t i = 0; i < op->args.size(); i++) {
             stream << ", ";            

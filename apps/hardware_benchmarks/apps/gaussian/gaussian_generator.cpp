@@ -11,6 +11,7 @@ using namespace Halide;
 
 // Size of blur for gradients.
 int blockSize = 5;
+  const int blockSize_val = 5;
 
 class GaussianBlur : public Halide::Generator<GaussianBlur> {
 public:
@@ -36,7 +37,7 @@ public:
 
         // create a normalized set of 8bit weights
         Func kernel;
-        Expr sum_kernel[blockSize];
+        Expr sum_kernel[blockSize_val];
         for (int i=0; i<blockSize; ++i) {
           if (i==0) {
             sum_kernel[i] = kernel_f(i-blockSize/2);

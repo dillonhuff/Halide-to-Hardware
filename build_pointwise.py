@@ -42,11 +42,14 @@ def gen_axi_packed_stencil(typename, e0, e1):
     cdef += '\t{0} elems[{1}*{2}];\n'.format(typename, e0, e1)    
     cdef += '  public:\n'
     cdef += '\tvoid set_last(const int);\n'
+    cdef += '\tvoid set(const {0} c, const size_t e0=0, const size_t e1=0, const size_t e2=0);\n'.format(typename)
+    cdef += '\t{0} get(const size_t e0=0, const size_t e1=0, const size_t e2=0);\n'.format(typename)
     cdef += '\t{0}();\n'.format(stencil_name('AxiPackedStencil', typename, e0, e1))
-    cdef += '\t{0} operator()(const size_t e0=0, const size_t e1=0, const size_t e2=0);\n'.format(typename)
+    cdef += '\tvoid copy(const {0}& in);\n'.format(stencil_name('AxiPackedStencil', typename, e0, e1))
+    #cdef += '\t{0} operator()(const size_t e0=0, const size_t e1=0, const size_t e2=0);\n'.format(typename)
     #cdef += '\t{0}({1}&);\n'.format(sname, stencil_name('PackedStencil', typename, e0, e1))    
-    cdef += '\toperator {0}();\n'.format(stencil_name('PackedStencil', typename, e0, e1))
-    cdef += '\toperator {0}();\n'.format(stencil_name('Stencil', typename, e0, e1))    
+    #cdef += '\toperator {0}();\n'.format(stencil_name('PackedStencil', typename, e0, e1))
+    #cdef += '\toperator {0}();\n'.format(stencil_name('Stencil', typename, e0, e1))    
     cdef += '};\n\n'
     return cdef
 
@@ -95,19 +98,19 @@ f = open('./apps/hardware_benchmarks/apps/pointwise/gen_classes.h', 'w');
 
 axi = decl_axi_packed_stencil('uint16_t', 1, 1)
 f.write(axi)
-axi = decl_packed_stencil('uint16_t', 1, 1)
-f.write(axi)
-axi = decl_stencil('uint16_t', 1, 1)
-f.write(axi)
 
 axi = gen_axi_packed_stencil('uint16_t', 1, 1)
 f.write(axi)
 
-axi = gen_packed_stencil('uint16_t', 1, 1)
-f.write(axi)
+f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 1, 1), stencil_name('PackedStencil', 'uint16_t', 1, 1)))
 
-axi = gen_stencil('uint16_t', 1, 1)
-f.write(axi)
+f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 1, 1), stencil_name('Stencil', 'uint16_t', 1, 1)))
+
+# axi = gen_packed_stencil('uint16_t', 1, 1)
+# f.write(axi)
+
+# axi = gen_stencil('uint16_t', 1, 1)
+# f.write(axi)
 
 ast = gen_stream(axi_stencil_name('uint16_t', 1, 1))
 f.write(ast)
