@@ -75,9 +75,7 @@ const string vhls_header_includes =
     "#include <assert.h>\n"
     "#include <stdio.h>\n"
     "#include <stdlib.h>\n"
-    "#include \"dhls_stream.h\"\n"
-    "#include \"gen_classes.h\"\n"
-    "#include \"dhls_stencil.h\"\n";
+  "#include \"gen_classes.h\"\n";
 }
 
 void CodeGen_VHLS_Target::init_module() {

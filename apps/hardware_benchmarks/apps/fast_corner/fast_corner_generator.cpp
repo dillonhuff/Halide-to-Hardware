@@ -17,7 +17,7 @@ using namespace Halide;
 
   // A corner is found if the number of contiguous pixel values exceeds the
   // minimum length for a segment.
-  int8_t min_seg_len = 9;
+  const int8_t min_seg_len = 9;
   
 class FastCornerDetector : public Halide::Generator<FastCornerDetector> {
 public:
@@ -109,7 +109,7 @@ public:
         output(x, y) = hw_output(x, y);
         
         /* THE SCHEDULE */
-        if (get_target().has_feature(Target::CoreIR)) {
+        if (get_target().has_feature(Target::CoreIR) || get_target().has_feature(Target::HLS)) {
           hw_in.compute_root();
           hw_output.compute_root();
           
