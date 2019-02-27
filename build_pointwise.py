@@ -124,10 +124,15 @@ f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t',
 # f.write(axi)
 
 ast = gen_stream(axi_stencil_name('uint16_t', 1, 1))
-ast = gen_stream(axi_stencil_name('uint16_t', 3, 3))
-ast = gen_stream(axi_stencil_name('int32_t', 1, 1))
-ast = gen_stream(axi_stencil_name('int32_t', 3, 3))
+f.write(ast)
 
+ast = gen_stream(axi_stencil_name('uint16_t', 3, 3))
+f.write(ast)
+
+ast = gen_stream(axi_stencil_name('int32_t', 1, 1))
+f.write(ast)
+
+ast = gen_stream(axi_stencil_name('int32_t', 3, 3))
 f.write(ast)
 f.write('\n')
 f.close()
