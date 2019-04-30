@@ -33,14 +33,15 @@ public:
         output(x, y) = hw_output(x,y);
 
         /* THE SCHEDULE */
-        if (get_target().has_feature(Target::CoreIR)) {
+        if (get_target().has_feature(Target::CoreIR) || get_target().has_feature(Target::HLS)) {
           Var xi,yi, xo,yo;
-          
+
           hw_input.compute_root();
           hw_output.compute_root();
           
           hw_output.tile(x,y, xo,yo, xi,yi, 64-1, 64)
             .hw_accelerate(xi, xo);
+          kernel.compute_at(hw_output, xo);
 
           conv.update()
             .unroll(r.x, 2)

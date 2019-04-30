@@ -325,9 +325,12 @@ void CodeGen_VHLS_Target::CodeGen_VHLS_C::visit(const Allocate *op) {
     allocations.push(alloc_name, alloc);
 
     do_indent();
-    stream << print_type(op->type) << ' '
-           << print_name(alloc_name)
-           << "[" << constant_size << "];\n";
+    stream << "ram_" << print_type(op->type) << "_" << constant_size
+           << " " << print_name(alloc_name) << ";\n";
+
+    // stream << print_type(op->type) << ' '
+    //        << print_name(alloc_name)
+    //        << "[" << constant_size << "];\n";
     // add a 'ARRAY_PARTITION" pragma
     //stream << "#pragma HLS ARRAY_PARTITION variable=" << print_name(op->name) << " complete dim=0\n\n";
 
@@ -341,5 +344,85 @@ void CodeGen_VHLS_Target::CodeGen_VHLS_C::visit(const Allocate *op) {
 
 }
 
+  void CodeGen_VHLS_Target::CodeGen_VHLS_C::visit(const Store *op) {
+    user_assert(is_one(op->predicate)) << "Predicated store is not supported by C backend.\n";
+
+    Type t = op->value.type();
+    string id_value = print_expr(op->value);
+    string name = print_name(op->name);
+
+    // TODO: We could replicate the logic in the llvm codegen which decides whether
+    // the vector access can be aligned. Doing so would also require introducing
+    // aligned type equivalents for all the vector types.
+
+    // If we're writing a contiguous ramp, just store the vector.
+    Expr dense_ramp_base = strided_ramp_base(op->index, 1);
+    if (dense_ramp_base.defined()) {
+      internal_assert(op->value.type().is_vector());
+      string id_ramp_base = print_expr(dense_ramp_base);
+      do_indent();
+      stream << id_value + ".store(" << name << ", " << id_ramp_base << ");\n";
+    } else if (op->index.type().is_vector()) {
+      // If index is a vector, scatter vector elements.
+      internal_assert(t.is_vector());
+      string id_index = print_expr(op->index);
+      do_indent();
+      stream << id_value + ".store(" << name << ", " << id_index << ");\n";
+    } else {
+      bool type_cast_needed =
+        t.is_handle() ||
+        !allocations.contains(op->name) ||
+        allocations.get(op->name).type != t;
+
+      string id_index = print_expr(op->index);
+      do_indent();
+      if (type_cast_needed) {
+        stream << "((" << print_type(t) << " *)" << name << ")";
+      } else {
+        stream << name;
+      }
+      //stream << "[" << id_index << "] = " << id_value << ";\n";
+      stream << ".ram_write(" << id_index << ", " << id_value << ");\n";
+    }
+    cache.clear();
+  }
+
+void  CodeGen_VHLS_Target::CodeGen_VHLS_C::visit(const Load *op) {
+    user_assert(is_one(op->predicate)) << "Predicated load is not supported by C backend.\n";
+
+    // TODO: We could replicate the logic in the llvm codegen which decides whether
+    // the vector access can be aligned. Doing so would also require introducing
+    // aligned type equivalents for all the vector types.
+    ostringstream rhs;
+
+    Type t = op->type;
+    string name = print_name(op->name);
+
+    // If we're loading a contiguous ramp into a vector, just load the vector
+    Expr dense_ramp_base = strided_ramp_base(op->index, 1);
+    if (dense_ramp_base.defined()) {
+        internal_assert(t.is_vector());
+        string id_ramp_base = print_expr(dense_ramp_base);
+        rhs << print_type(t) + "::load(" << name << ", " << id_ramp_base << ")";
+    } else if (op->index.type().is_vector()) {
+        // If index is a vector, gather vector elements.
+        internal_assert(t.is_vector());
+        string id_index = print_expr(op->index);
+        rhs << print_type(t) + "::load(" << name << ", " << id_index << ")";
+    } else {
+        string id_index = print_expr(op->index);
+        bool type_cast_needed = !(allocations.contains(op->name) &&
+                              allocations.get(op->name).type.element_of() == t.element_of());
+        if (type_cast_needed) {
+            rhs << "((const " << print_type(t.element_of()) << " *)" << name << ")";
+        } else {
+            rhs << name;
+        }
+        //rhs << "[" << id_index << "]";
+        rhs << ".ram_read(" << id_index << ")";
+    }
+    print_assignment(t, rhs.str());
+}
+  
 }
 }

@@ -7,6 +7,9 @@ def stencil_name(prefix, typename, e0, e1):
 def axi_stencil_name(typename, e0, e1):
     return stencil_name('AxiPackedStencil', typename, e0, e1)
 
+def packed_stencil_name(typename, e0, e1):
+    return stencil_name('PackedStencil', typename, e0, e1)
+
 def gen_stream(typename):
     s_name = ''
     cdef = 'class ' + 'hls_stream_' + typename  + '_ {' + '\n'
@@ -94,7 +97,8 @@ def run_cmd(cmd):
 
     assert(res == 0)
 
-app_name = 'cascade'    
+#app_name = 'harris'
+app_name = 'cascade'
 run_cmd('cd ./apps/hardware_benchmarks/apps/{0}/; make design-vhls'.format(app_name))
 
 # Generate auto-gen header files
@@ -102,31 +106,55 @@ f = open('./apps/hardware_benchmarks/apps/{0}/gen_classes.h'.format(app_name), '
 
 axi = decl_axi_packed_stencil('uint16_t', 1, 1)
 f.write(axi)
-axi = decl_axi_packed_stencil('int32_t', 1, 1)
+axi = gen_axi_packed_stencil('uint16_t', 1, 1)
 f.write(axi)
 
-axi = gen_axi_packed_stencil('uint16_t', 1, 1)
+axi = decl_axi_packed_stencil('int32_t', 1, 1)
 f.write(axi)
 axi = gen_axi_packed_stencil('uint16_t', 3, 3)
 f.write(axi)
+
 axi = gen_axi_packed_stencil('int32_t', 1, 1)
 f.write(axi)
+
 axi = gen_axi_packed_stencil('int32_t', 3, 3)
+f.write(axi)
+
+axi = decl_axi_packed_stencil('int16_t', 1, 1)
+f.write(axi)
+
+axi = gen_axi_packed_stencil('int16_t', 1, 1)
+f.write(axi)
+
+axi = gen_axi_packed_stencil('int16_t', 3, 3)
 f.write(axi)
 
 f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 1, 1), stencil_name('PackedStencil', 'uint16_t', 1, 1)))
 f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 1, 1), stencil_name('Stencil', 'uint16_t', 1, 1)))
 
-# axi = gen_packed_stencil('uint16_t', 1, 1)
-# f.write(axi)
+f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int32_t', 1, 1), stencil_name('PackedStencil', 'int32_t', 1, 1)))
 
-# axi = gen_stencil('uint16_t', 1, 1)
-# f.write(axi)
+f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int32_t', 3, 3), stencil_name('PackedStencil', 'int32_t', 3, 3)))
+
+f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 3, 3), stencil_name('PackedStencil', 'uint16_t', 3, 3)))
+f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 3, 3), stencil_name('Stencil', 'uint16_t', 3, 3)))
+
+f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int16_t', 1, 1), stencil_name('PackedStencil', 'int16_t', 1, 1)))
+f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int16_t', 1, 1), stencil_name('Stencil', 'int16_t', 1, 1)))
+
+f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int16_t', 1, 1), stencil_name('PackedStencil', 'int16_t', 3, 3)))
+f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int16_t', 1, 1), stencil_name('Stencil', 'int16_t', 3, 3)))
 
 ast = gen_stream(axi_stencil_name('uint16_t', 1, 1))
 f.write(ast)
 
+ast = gen_stream(axi_stencil_name('int16_t', 1, 1))
+f.write(ast)
+
 ast = gen_stream(axi_stencil_name('uint16_t', 3, 3))
+f.write(ast)
+
+ast = gen_stream(axi_stencil_name('int16_t', 3, 3))
 f.write(ast)
 
 ast = gen_stream(axi_stencil_name('int32_t', 1, 1))
@@ -134,6 +162,26 @@ f.write(ast)
 
 ast = gen_stream(axi_stencil_name('int32_t', 3, 3))
 f.write(ast)
+
+# Packed stencils
+ast = gen_stream(packed_stencil_name('uint16_t', 1, 1))
+f.write(ast)
+
+ast = gen_stream(packed_stencil_name('int16_t', 1, 1))
+f.write(ast)
+
+ast = gen_stream(packed_stencil_name('uint16_t', 3, 3))
+f.write(ast)
+
+ast = gen_stream(packed_stencil_name('int16_t', 3, 3))
+f.write(ast)
+
+ast = gen_stream(packed_stencil_name('int32_t', 1, 1))
+f.write(ast)
+
+ast = gen_stream(packed_stencil_name('int32_t', 3, 3))
+f.write(ast)
+
 f.write('\n')
 f.close()
 

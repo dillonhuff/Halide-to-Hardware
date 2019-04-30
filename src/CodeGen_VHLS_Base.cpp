@@ -13,6 +13,7 @@
 namespace Halide {
 namespace Internal {
 
+  using namespace std;
 using std::ostream;
 using std::endl;
 using std::string;
@@ -20,6 +21,19 @@ using std::vector;
 using std::ostringstream;
 using std::to_string;
 
+int id_const_value(const Expr e) {
+  if (const IntImm* e_int = e.as<IntImm>()) {
+    return e_int->value;
+
+  } else if (const UIntImm* e_uint = e.as<UIntImm>()) {
+    return e_uint->value;
+
+  } else {
+    //internal_error << "invalid constant expr\n";
+    return -1;
+  }
+}
+  
 string CodeGen_VHLS_Base::print_stencil_type(Stencil_Type stencil_type) {
     ostringstream oss;
     // C: Stencil<uint16_t, 1, 1, 1> stencil_var;
@@ -129,13 +143,73 @@ void CodeGen_VHLS_Base::visit(const Call *op) {
     string a0 = print_expr(op->args[0]);
     string a1 = print_expr(op->args[1]);
     do_indent();
-    stream << "linebuffer<";
+    // stream << "linebuffer<";
+    // for(size_t i = 2; i < op->args.size(); i++) {
+    //   stream << print_expr(op->args[i]);
+    //   if (i != op->args.size() -1)
+    //     stream << ", ";
+    // }
+    // stream << ">(" << a0 << ", " << a1 << ");\n";
+
+    stream << "linebuffer_";
+    int numExtents = op->args.size() - 2;
+    uint extents[numExtents];
     for(size_t i = 2; i < op->args.size(); i++) {
       stream << print_expr(op->args[i]);
-      if (i != op->args.size() -1)
-        stream << ", ";
+
+      extents[i - 2] = id_const_value(op->args[i]);
+
+      if (i != op->args.size() -1) {
+        stream << "_";
+      }
     }
-    stream << ">(" << a0 << ", " << a1 << ");\n";
+
+    string lbName = "_lb_" + a0 + "_to_" + a1;
+    stream << " " << lbName << ";" << endl;
+    
+    // TODO: Add prefix write loop
+    // Find the output dimensions of the stenci
+    auto stencil_type = stencils.get(op->args[1].as<Variable>()->name);
+    int num_dims = op->args.size() - 2;    
+    int output_dims[num_dims];
+    for (int i=0; i<num_dims; ++i) {
+      output_dims[i] = id_const_value(stencil_type.bounds[i].extent);
+    }
+
+    int numPrefixWrites = 0;
+    assert(num_dims == numExtents);
+    int offset = 1;
+    for (int i = 0; i < numExtents; i++) {
+      numPrefixWrites += offset*(output_dims[i] - 1);
+      offset *= extents[i];
+    }
+    numPrefixWrites += 1;
+    
+    cout << "numPrefixWrites = " << numPrefixWrites << endl;
+
+    stream << "\tfor (int i = 0; i < " << numPrefixWrites << "; i++) {" << endl;
+    stream << "\t\t" << lbName << ".lb_write(" << a0 << ".read())" << ";" << endl;
+    stream << "\t}" << endl;    
+    // TODO: Add steady state read write loop
+    int totalSize = 1;
+    for (int i = 0; i < num_dims; i++) {
+      totalSize *= extents[i];
+    }
+
+    int steadyStateIters = totalSize - numPrefixWrites;
+    stream << "\tfor (int i = 0; i < " << steadyStateIters << "; i++) {" << endl;
+    stream << "\t\t" << "if (" << lbName << ".has_valid_data()" << ") {" << endl;
+    stream << "\t\t\t" << a1 << ".copy(" << lbName << ".lb_read())" << ";" << endl;
+    stream << "\t\t" << "} else {" << endl;
+    stream << "\t\t\t" << print_stencil_type(stencil_type) << " tmp;" << endl;
+    stream << "\t\t\t" << "tmp" << ".copy(" << lbName << ".lb_read())" << ";" << endl;
+    stream << "\t\t" << "}" << endl;        
+    stream << "\t\t" << lbName << ".lb_write(" << a0 << ".read())" << ";" << endl;
+    stream << "\t}" << endl;    
+    
+
+    stream << "// Steady state for loop to write and read";
+
     id = "0"; // skip evaluation
   } else if (op->name == "write_stream") {
     //assert(false);

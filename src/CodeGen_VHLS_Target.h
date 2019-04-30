@@ -67,6 +67,8 @@ protected:
         
         using CodeGen_VHLS_Base::visit;
 
+      void visit(const Store *op);
+      void  visit(const Load *op);      
         void visit(const For *op);
         void visit(const Allocate *op);
     };
