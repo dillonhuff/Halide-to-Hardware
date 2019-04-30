@@ -151,7 +151,7 @@ void CodeGen_VHLS_Base::visit(const Call *op) {
     // }
     // stream << ">(" << a0 << ", " << a1 << ");\n";
 
-    stream << "linebuffer_";
+    stream << "linebuffer_" << ;
     int numExtents = op->args.size() - 2;
     uint extents[numExtents];
     for(size_t i = 2; i < op->args.size(); i++) {
@@ -199,10 +199,10 @@ void CodeGen_VHLS_Base::visit(const Call *op) {
     int steadyStateIters = totalSize - numPrefixWrites;
     stream << "\tfor (int i = 0; i < " << steadyStateIters << "; i++) {" << endl;
     stream << "\t\t" << "if (" << lbName << ".has_valid_data()" << ") {" << endl;
-    stream << "\t\t\t" << a1 << ".copy(" << lbName << ".lb_read())" << ";" << endl;
+    stream << "\t\t\t" << a1 << ".write(" << lbName << ".lb_read())" << ";" << endl;
     stream << "\t\t" << "} else {" << endl;
-    stream << "\t\t\t" << print_stencil_type(stencil_type) << " tmp;" << endl;
-    stream << "\t\t\t" << "tmp" << ".copy(" << lbName << ".lb_read())" << ";" << endl;
+    //stream << "\t\t\t" << print_stencil_type(stencil_type) << " tmp;" << endl;
+    //stream << "\t\t\t" << "tmp" << ".write(" << lbName << ".lb_read())" << ";" << endl;
     stream << "\t\t" << "}" << endl;        
     stream << "\t\t" << lbName << ".lb_write(" << a0 << ".read())" << ";" << endl;
     stream << "\t}" << endl;    
