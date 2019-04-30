@@ -133,7 +133,8 @@ f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t',
 f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 1, 1), stencil_name('Stencil', 'uint16_t', 1, 1)))
 
 f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int32_t', 1, 1), stencil_name('PackedStencil', 'int32_t', 1, 1)))
-
+f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int32_t', 1, 1), stencil_name('Stencil', 'int32_t', 1, 1)))
+f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int32_t', 3, 3), stencil_name('Stencil', 'int32_t', 3, 3)))
 f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int32_t', 3, 3), stencil_name('PackedStencil', 'int32_t', 3, 3)))
 
 f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 3, 3), stencil_name('PackedStencil', 'uint16_t', 3, 3)))
