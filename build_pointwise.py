@@ -10,6 +10,9 @@ def axi_stencil_name(typename, e0, e1):
 def packed_stencil_name(typename, e0, e1):
     return stencil_name('PackedStencil', typename, e0, e1)
 
+def stream_name(typename):
+    return 'hls_stream_' + typename + '_'
+
 def gen_stream(typename):
     s_name = ''
     cdef = 'class ' + 'hls_stream_' + typename  + '_ {' + '\n'
@@ -182,6 +185,27 @@ f.write(ast)
 
 ast = gen_stream(packed_stencil_name('int32_t', 3, 3))
 f.write(ast)
+
+def declare_linebuffer(s0Name, s1Name, ext0, ext1):
+    fullLbName = 'linebuffer_' + stream_name(s0Name) + '_to_' + stream_name(s1Name) + '_bnds_' + str(ext0) + '_' + str(ext1)
+    return 'class ' + fullLbName + ' {' + '};\n'
+
+def declare_ram(typename, depth):
+    ramName = 'ram_' + typename + '_' + str(depth)
+    return 'class ' + ramName + ' {' + '};\n'
+
+s0Name = packed_stencil_name('int32_t', 1, 1)
+s1Name = packed_stencil_name('int32_t', 3, 3)
+lb0 = declare_linebuffer(s0Name, s1Name, 62, 62)
+f.write(lb0)
+
+s0Name = axi_stencil_name('uint16_t', 1, 1)
+s1Name = packed_stencil_name('uint16_t', 3, 3)
+lb0 = declare_linebuffer(s0Name, s1Name, 64, 64)
+f.write(lb0)
+
+ramName = declare_ram('int32_t', 9)
+f.write(ramName)
 
 f.write('\n')
 f.close()
