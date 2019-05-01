@@ -151,7 +151,13 @@ void CodeGen_VHLS_Base::visit(const Call *op) {
     // }
     // stream << ">(" << a0 << ", " << a1 << ");\n";
 
-    stream << "linebuffer_" << ;
+    auto a0_stencil_type = stencils.get(op->args[0].as<Variable>()->name);    
+    auto a1_stencil_type = stencils.get(op->args[1].as<Variable>()->name);
+
+    string a0_stencil_name = print_stencil_type(a0_stencil_type);
+    string a1_stencil_name = print_stencil_type(a1_stencil_type);    
+    
+    stream << "linebuffer_" << a0_stencil_name << "_to_" << a1_stencil_name << "_bnds_";
     int numExtents = op->args.size() - 2;
     uint extents[numExtents];
     for(size_t i = 2; i < op->args.size(); i++) {
