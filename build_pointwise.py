@@ -194,7 +194,10 @@ def methodStrs(methodDecls):
 
 def declare_linebuffer(s0Name, s1Name, ext0, ext1):
     fullLbName = 'linebuffer_' + stream_name(s0Name) + '_to_' + stream_name(s1Name) + '_bnds_' + str(ext0) + '_' + str(ext1)
-    return 'class ' + fullLbName + ' {' + '};\n'
+    writeL = 'void lb_write(const {0}& stencil);'.format(s0Name)
+    readL = s1Name + ' lb_read();';
+    validL = 'bool has_valid_data();'
+    return 'class ' + fullLbName + ' {\npublic:\n' + methodStrs([readL, writeL, validL]) + '};\n'
 
 def declare_ram(typename, depth):
     ramName = 'ram_' + typename + '_' + str(depth)
