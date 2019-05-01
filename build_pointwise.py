@@ -186,13 +186,21 @@ f.write(ast)
 ast = gen_stream(packed_stencil_name('int32_t', 3, 3))
 f.write(ast)
 
+def methodStrs(methodDecls):
+    st = ''
+    for m in methodDecls:
+        st += m + '\n'
+    return st;
+
 def declare_linebuffer(s0Name, s1Name, ext0, ext1):
     fullLbName = 'linebuffer_' + stream_name(s0Name) + '_to_' + stream_name(s1Name) + '_bnds_' + str(ext0) + '_' + str(ext1)
     return 'class ' + fullLbName + ' {' + '};\n'
 
 def declare_ram(typename, depth):
     ramName = 'ram_' + typename + '_' + str(depth)
-    return 'class ' + ramName + ' {' + '};\n'
+    readR = typename + ' ram_read(const int addr);';
+    writeR = 'void ram_write(const int addr, ' + typename + ' value);';
+    return 'class ' + ramName + ' {\npublic:\n' + methodStrs([readR, writeR]) + '};\n'
 
 s0Name = packed_stencil_name('int32_t', 1, 1)
 s1Name = packed_stencil_name('int32_t', 3, 3)
