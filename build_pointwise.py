@@ -100,12 +100,13 @@ def run_cmd(cmd):
 
     assert(res == 0)
 
+# apps/hardware_benchmarks/tests
 #app_name = 'harris'
-app_name = 'cascade'
-run_cmd('cd ./apps/hardware_benchmarks/apps/{0}/; make design-vhls'.format(app_name))
+app_name = 'conv_2_1'
+run_cmd('cd ./apps/hardware_benchmarks/tests/{0}/; make design-vhls'.format(app_name))
 
 # Generate auto-gen header files
-f = open('./apps/hardware_benchmarks/apps/{0}/gen_classes.h'.format(app_name), 'w');
+f = open('./apps/hardware_benchmarks/tests/{0}/gen_classes.h'.format(app_name), 'w');
 
 axi = decl_axi_packed_stencil('uint16_t', 1, 1)
 f.write(axi)
@@ -115,6 +116,9 @@ f.write(axi)
 axi = decl_axi_packed_stencil('int32_t', 1, 1)
 f.write(axi)
 axi = gen_axi_packed_stencil('uint16_t', 3, 3)
+f.write(axi)
+
+axi = gen_axi_packed_stencil('uint16_t', 1, 2)
 f.write(axi)
 
 axi = gen_axi_packed_stencil('int32_t', 1, 1)
@@ -133,6 +137,7 @@ axi = gen_axi_packed_stencil('int16_t', 3, 3)
 f.write(axi)
 
 f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 1, 1), stencil_name('PackedStencil', 'uint16_t', 1, 1)))
+f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 1, 2), stencil_name('PackedStencil', 'uint16_t', 1, 2)))
 f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 1, 1), stencil_name('Stencil', 'uint16_t', 1, 1)))
 
 f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int32_t', 1, 1), stencil_name('PackedStencil', 'int32_t', 1, 1)))
@@ -155,6 +160,9 @@ f.write(ast)
 ast = gen_stream(axi_stencil_name('int16_t', 1, 1))
 f.write(ast)
 
+ast = gen_stream(axi_stencil_name('uint16_t', 1, 2))
+f.write(ast)
+
 ast = gen_stream(axi_stencil_name('uint16_t', 3, 3))
 f.write(ast)
 
@@ -175,6 +183,9 @@ ast = gen_stream(packed_stencil_name('int16_t', 1, 1))
 f.write(ast)
 
 ast = gen_stream(packed_stencil_name('uint16_t', 3, 3))
+f.write(ast)
+
+ast = gen_stream(packed_stencil_name('uint16_t', 1, 2))
 f.write(ast)
 
 ast = gen_stream(packed_stencil_name('int16_t', 3, 3))
@@ -210,12 +221,25 @@ s1Name = packed_stencil_name('int32_t', 3, 3)
 lb0 = declare_linebuffer(s0Name, s1Name, 62, 62)
 f.write(lb0)
 
+s0Name = packed_stencil_name('int32_t', 1, 1)
+s1Name = packed_stencil_name('int32_t', 3, 3)
+lb0 = declare_linebuffer(s0Name, s1Name, 14, 14)
+f.write(lb0)
+
 s0Name = axi_stencil_name('uint16_t', 1, 1)
 s1Name = packed_stencil_name('uint16_t', 3, 3)
 lb0 = declare_linebuffer(s0Name, s1Name, 64, 64)
 f.write(lb0)
 
+s0Name = axi_stencil_name('uint16_t', 1, 1)
+s1Name = packed_stencil_name('uint16_t', 3, 3)
+lb0 = declare_linebuffer(s0Name, s1Name, 16, 16)
+f.write(lb0)
+
 ramName = declare_ram('int32_t', 9)
+f.write(ramName)
+
+ramName = declare_ram('int32_t', 2)
 f.write(ramName)
 
 f.write('\n')
@@ -223,13 +247,13 @@ f.close()
 
 
 # Generate ll file for examination
-run_cmd('clang++ -std=c++11 -O1 -c -S -emit-llvm ./apps/hardware_benchmarks/apps/{0}/bin/vhls_target.cpp  -I ./apps/hardware_benchmarks/apps/{0}/'.format(app_name))
+run_cmd('clang++ -std=c++11 -O1 -c -S -emit-llvm ./apps/hardware_benchmarks/tests/{0}/bin/vhls_target.cpp  -I ./apps/hardware_benchmarks/tests/{0}/'.format(app_name))
 
 # Generate bc file for optimization
-run_cmd('clang++ -std=c++11 -O0 -c -emit-llvm ./apps/hardware_benchmarks/apps/{0}/bin/vhls_target.cpp  -I ./apps/hardware_benchmarks/apps/{0}/'.format(app_name))
+run_cmd('clang++ -std=c++11 -O0 -c -emit-llvm ./apps/hardware_benchmarks/tests/{0}/bin/vhls_target.cpp  -I ./apps/hardware_benchmarks/tests/{0}/'.format(app_name))
 
 # Compile C++ testbench
-run_cmd('clang++ -std=c++11 -O1 ./apps/hardware_benchmarks/apps/{0}/target_tb.cpp ./apps/hardware_benchmarks/apps/{0}/bin/vhls_target.cpp  -I ./apps/hardware_benchmarks/apps/{0}/'.format(app_name))
+run_cmd('clang++ -std=c++11 -O1 ./apps/hardware_benchmarks/tests/{0}/target_tb.cpp ./apps/hardware_benchmarks/tests/{0}/bin/vhls_target.cpp  -I ./apps/hardware_benchmarks/tests/{0}/'.format(app_name))
 
 # Run C++ testbench
 run_cmd('./a.out')

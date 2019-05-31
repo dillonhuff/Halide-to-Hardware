@@ -43,7 +43,8 @@ public:
           hw_input.compute_root();
           hw_output.compute_root();
           
-          hw_output.tile(x,y, xo,yo, xi,yi, 64-4, 64-4)
+          //hw_output.tile(x,y, xo,yo, xi,yi, 64-4, 64-4)
+          hw_output.tile(x,y, xo,yo, xi,yi, 16-4, 16-4)
             .hw_accelerate(xi, xo);
 
           kernel.compute_at(hw_output, xo);

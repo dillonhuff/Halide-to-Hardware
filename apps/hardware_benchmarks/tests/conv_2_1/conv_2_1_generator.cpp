@@ -34,7 +34,8 @@ public:
         output(x, y) = hw_output(x,y);
 
         /* THE SCHEDULE */
-        if (get_target().has_feature(Target::CoreIR)) {
+        if (get_target().has_feature(Target::CoreIR) ||
+            get_target().has_feature(Target::HLS)) {
           Var xi,yi, xo,yo;
           
           hw_input.compute_root();
