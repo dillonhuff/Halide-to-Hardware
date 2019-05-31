@@ -137,8 +137,12 @@ axi = gen_axi_packed_stencil('int16_t', 3, 3)
 f.write(axi)
 
 f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 1, 1), stencil_name('PackedStencil', 'uint16_t', 1, 1)))
-f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 1, 2), stencil_name('PackedStencil', 'uint16_t', 1, 2)))
 f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 1, 1), stencil_name('Stencil', 'uint16_t', 1, 1)))
+
+f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 1, 2), stencil_name('PackedStencil', 'uint16_t', 1, 2)))
+f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 1, 2), stencil_name('Stencil', 'uint16_t', 1, 2)))
+
+
 
 f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int32_t', 1, 1), stencil_name('PackedStencil', 'int32_t', 1, 1)))
 f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int32_t', 1, 1), stencil_name('Stencil', 'int32_t', 1, 1)))
@@ -221,6 +225,7 @@ s1Name = packed_stencil_name('int32_t', 3, 3)
 lb0 = declare_linebuffer(s0Name, s1Name, 62, 62)
 f.write(lb0)
 
+
 s0Name = packed_stencil_name('int32_t', 1, 1)
 s1Name = packed_stencil_name('int32_t', 3, 3)
 lb0 = declare_linebuffer(s0Name, s1Name, 14, 14)
@@ -228,6 +233,11 @@ f.write(lb0)
 
 s0Name = axi_stencil_name('uint16_t', 1, 1)
 s1Name = packed_stencil_name('uint16_t', 3, 3)
+lb0 = declare_linebuffer(s0Name, s1Name, 64, 64)
+f.write(lb0)
+
+s0Name = axi_stencil_name('uint16_t', 1, 1)
+s1Name = packed_stencil_name('uint16_t', 1, 2)
 lb0 = declare_linebuffer(s0Name, s1Name, 64, 64)
 f.write(lb0)
 
