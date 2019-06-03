@@ -242,6 +242,11 @@ lb0 = declare_linebuffer(s0Name, s1Name, 64, 64)
 f.write(lb0)
 
 s0Name = axi_stencil_name('uint16_t', 1, 1)
+s1Name = packed_stencil_name('uint16_t', 1, 2)
+lb0 = declare_linebuffer(s0Name, s1Name, 8, 8)
+f.write(lb0)
+
+s0Name = axi_stencil_name('uint16_t', 1, 1)
 s1Name = packed_stencil_name('uint16_t', 3, 3)
 lb0 = declare_linebuffer(s0Name, s1Name, 16, 16)
 f.write(lb0)

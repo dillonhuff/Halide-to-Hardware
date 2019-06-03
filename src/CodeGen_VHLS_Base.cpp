@@ -193,25 +193,30 @@ void CodeGen_VHLS_Base::visit(const Call *op) {
     
     cout << "numPrefixWrites = " << numPrefixWrites << endl;
 
-    stream << "\tfor (int i = 0; i < " << numPrefixWrites << "; i++) {" << endl;
-    stream << "\t\t" << lbName << ".lb_write(" << a0 << ".read())" << ";" << endl;
-    stream << "\t}" << endl;    
-    // TODO: Add steady state read write loop
     int totalSize = 1;
     for (int i = 0; i < num_dims; i++) {
       totalSize *= extents[i];
     }
-
-    int steadyStateIters = totalSize - numPrefixWrites;
-    stream << "\tfor (int i = 0; i < " << steadyStateIters << "; i++) {" << endl;
-    stream << "\t\t" << "if (" << lbName << ".has_valid_data()" << ") {" << endl;
-    stream << "\t\t\t" << a1 << ".write(" << lbName << ".lb_read())" << ";" << endl;
-    stream << "\t\t" << "} else {" << endl;
-    //stream << "\t\t\t" << print_stencil_type(stencil_type) << " tmp;" << endl;
-    //stream << "\t\t\t" << "tmp" << ".write(" << lbName << ".lb_read())" << ";" << endl;
-    stream << "\t\t" << "}" << endl;        
+    
+    //stream << "\tfor (int i = 0; i < " << numPrefixWrites << "; i++) {" << endl;
+    stream << "\tfor (int i = 0; i < " << totalSize << "; i++) {" << endl;
     stream << "\t\t" << lbName << ".lb_write(" << a0 << ".read())" << ";" << endl;
     stream << "\t}" << endl;    
+    // TODO: Add steady state read write loop
+
+    int steadyStateIters = totalSize - numPrefixWrites + 1;
+    stream << "\tfor (int i = 0; i < " << steadyStateIters << "; i++) {" << endl;
+    stream << "\t\t" << "while (!" << lbName << ".has_valid_data()" << ") {}" << endl;
+    stream << "\t\t\t" << a1 << ".write(" << lbName << ".lb_read())" << ";" << endl;
+    stream << "\t}" << endl;    
+
+    // stream << "\tfor (int i = 0; i < " << steadyStateIters << "; i++) {" << endl;
+    // stream << "\t\t" << "if (" << lbName << ".has_valid_data()" << ") {" << endl;
+    // stream << "\t\t\t" << a1 << ".write(" << lbName << ".lb_read())" << ";" << endl;
+    // stream << "\t\t" << "} else {" << endl;
+    // stream << "\t\t" << "}" << endl;        
+    // stream << "\t\t" << lbName << ".lb_write(" << a0 << ".read())" << ";" << endl;
+    // stream << "\t}" << endl;    
     
 
     stream << "// Steady state for loop to write and read";
