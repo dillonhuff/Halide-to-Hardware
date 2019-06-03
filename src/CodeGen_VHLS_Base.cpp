@@ -207,7 +207,7 @@ void CodeGen_VHLS_Base::visit(const Call *op) {
     int steadyStateIters = totalSize - numPrefixWrites + 1;
     stream << "\tfor (int i = 0; i < " << steadyStateIters << "; i++) {" << endl;
     stream << "\t\t" << "while (!" << lbName << ".has_valid_data()" << ") {}" << endl;
-    stream << "\t\t\t" << a1 << ".write(" << lbName << ".lb_read())" << ";" << endl;
+    stream << "\t\t" << a1 << ".write(" << lbName << ".lb_read())" << ";" << endl;
     stream << "\t}" << endl;    
 
     // stream << "\tfor (int i = 0; i < " << steadyStateIters << "; i++) {" << endl;
