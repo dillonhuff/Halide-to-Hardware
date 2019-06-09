@@ -206,7 +206,7 @@ void CodeGen_VHLS_Base::visit(const Call *op) {
 
     int steadyStateIters = totalSize - numPrefixWrites + 1;
     stream << "\tfor (int i = 0; i < " << steadyStateIters << "; i++) {" << endl;
-    stream << "\t\t" << "while (!" << lbName << ".has_valid_data()" << ") {}" << endl;
+    //stream << "\t\t" << "while (!" << lbName << ".has_valid_data()" << ") {}" << endl;
     stream << "\t\t" << a1 << ".write(" << lbName << ".lb_read())" << ";" << endl;
     stream << "\t}" << endl;    
 
@@ -464,15 +464,16 @@ void CodeGen_VHLS_Base::visit(const Call *op) {
       // VHLS C: if(dim_0 >= consumer_offset_0 && dim_0 <= consumer_offset_0 + consumer_extent_0 - stencil_size_0
       //           [&& dim_1 >= consumer_offset_1 && dim_1 <= consumer_offset_1 + consumer_extent_1 - stencil_size_1...])
       do_indent();
-      stream << "if (";
-      for (size_t j = 0; j < num_of_demensions; j++) {
-        string dim_name = "_dim_" + to_string(j);
-        stream << dim_name << " >= " << consumer_offsets[i][j] << " && "
-               << dim_name << " <= " << consumer_offsets[i][j] + consumer_extents[i][j] - stencil_sizes[j];
-        if (j != num_of_demensions - 1)
-          stream << " && ";
-      }
-      stream << ")\n";
+      stream << "if (1)\n";
+      // stream << "if (";
+      // for (size_t j = 0; j < num_of_demensions; j++) {
+      //   string dim_name = "_dim_" + to_string(j);
+      //   stream << dim_name << " >= " << consumer_offsets[i][j] << " && "
+      //          << dim_name << " <= " << consumer_offsets[i][j] + consumer_extents[i][j] - stencil_sizes[j];
+      //   if (j != num_of_demensions - 1)
+      //     stream << " && ";
+      // }
+      // stream << ")\n";
 
       // emits the write call in the if body
       open_scope();
