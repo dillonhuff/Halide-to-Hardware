@@ -101,65 +101,84 @@ def run_cmd(cmd):
     assert(res == 0)
 
 # apps/hardware_benchmarks/tests
-app_name = 'harris'
+#app_name = 'harris'
 #app_name = 'conv_2_1'
-#app_name = 'conv_3_3'
-app_loc = './apps/hardware_benchmarks/apps'
+app_name = 'conv_3_3'
+app_loc = './apps/hardware_benchmarks/tests'
 run_cmd('cd {1}/{0}/; make design-vhls'.format(app_name, app_loc))
 
 # Generate auto-gen header files
 #f = open('./apps/hardware_benchmarks/tests/{0}/gen_classes.h'.format(app_name), 'w');
 f = open('{1}/{0}/gen_classes.h'.format(app_name, app_loc), 'w');
 
-axi = decl_axi_packed_stencil('uint16_t', 1, 1)
-f.write(axi)
-axi = gen_axi_packed_stencil('uint16_t', 1, 1)
-f.write(axi)
+stencils = [(1, 1), (3, 3), (1, 2)]
+types = ['int32_t', 'uint32_t', 'int16_t', 'uint16_t']
+for s in stencils:
+    for t  in types:
+        axi = gen_axi_packed_stencil(t, s[0], s[1])
+        f.write(axi)
+        
+        f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', t, s[0], s[1]), stencil_name('PackedStencil', t, s[0], s[1])))
+        f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', t, s[0], s[1]), stencil_name('Stencil', t, s[0], s[1])))        
 
-axi = decl_axi_packed_stencil('int32_t', 1, 1)
-f.write(axi)
-axi = gen_axi_packed_stencil('uint16_t', 3, 3)
-f.write(axi)
+# axi = decl_axi_packed_stencil('uint16_t', 1, 1)
+# f.write(axi)
+# axi = gen_axi_packed_stencil('uint16_t', 1, 1)
+# f.write(axi)
 
-axi = gen_axi_packed_stencil('uint16_t', 1, 2)
-f.write(axi)
+# axi = decl_axi_packed_stencil('int32_t', 1, 1)
+# f.write(axi)
 
-axi = gen_axi_packed_stencil('int32_t', 1, 1)
-f.write(axi)
+# axi = gen_axi_packed_stencil('uint16_t', 3, 3)
+# f.write(axi)
 
-axi = gen_axi_packed_stencil('int32_t', 3, 3)
-f.write(axi)
+# axi = decl_axi_packed_stencil('uint32_t', 3, 3)
+# f.write(axi)
 
-axi = decl_axi_packed_stencil('int16_t', 1, 1)
-f.write(axi)
+# axi = decl_axi_packed_stencil('uint32_t', 1, 1)
+# f.write(axi)
 
-axi = gen_axi_packed_stencil('int16_t', 1, 1)
-f.write(axi)
+# axi = gen_axi_packed_stencil('uint16_t', 1, 2)
+# f.write(axi)
 
-axi = gen_axi_packed_stencil('int16_t', 3, 3)
-f.write(axi)
+# axi = gen_axi_packed_stencil('int32_t', 1, 1)
+# f.write(axi)
 
-f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 1, 1), stencil_name('PackedStencil', 'uint16_t', 1, 1)))
-f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 1, 1), stencil_name('Stencil', 'uint16_t', 1, 1)))
+# axi = gen_axi_packed_stencil('int32_t', 3, 3)
+# f.write(axi)
 
-f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 1, 2), stencil_name('PackedStencil', 'uint16_t', 1, 2)))
-f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 1, 2), stencil_name('Stencil', 'uint16_t', 1, 2)))
+# axi = decl_axi_packed_stencil('int16_t', 1, 1)
+# f.write(axi)
+
+# axi = gen_axi_packed_stencil('int16_t', 1, 1)
+# f.write(axi)
+
+# axi = gen_axi_packed_stencil('int16_t', 3, 3)
+# f.write(axi)
+
+# f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 1, 1), stencil_name('PackedStencil', 'uint16_t', 1, 1)))
+# f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 1, 1), stencil_name('Stencil', 'uint16_t', 1, 1)))
+
+# f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 1, 2), stencil_name('PackedStencil', 'uint16_t', 1, 2)))
+# f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 1, 2), stencil_name('Stencil', 'uint16_t', 1, 2)))
 
 
+# f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int32_t', 1, 1), stencil_name('PackedStencil', 'int32_t', 1, 1)))
+# f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int32_t', 1, 1), stencil_name('Stencil', 'int32_t', 1, 1)))
+# f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int32_t', 3, 3), stencil_name('Stencil', 'int32_t', 3, 3)))
+# f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int32_t', 3, 3), stencil_name('PackedStencil', 'int32_t', 3, 3)))
 
-f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int32_t', 1, 1), stencil_name('PackedStencil', 'int32_t', 1, 1)))
-f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int32_t', 1, 1), stencil_name('Stencil', 'int32_t', 1, 1)))
-f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int32_t', 3, 3), stencil_name('Stencil', 'int32_t', 3, 3)))
-f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int32_t', 3, 3), stencil_name('PackedStencil', 'int32_t', 3, 3)))
+# f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint32_t', 3, 3), stencil_name('PackedStencil', 'uint32_t', 3, 3)))
+# f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint32_t', 1, 1), stencil_name('PackedStencil', 'uint32_t', 1, 1)))
 
-f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 3, 3), stencil_name('PackedStencil', 'uint16_t', 3, 3)))
-f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 3, 3), stencil_name('Stencil', 'uint16_t', 3, 3)))
+# f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 3, 3), stencil_name('PackedStencil', 'uint16_t', 3, 3)))
+# f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'uint16_t', 3, 3), stencil_name('Stencil', 'uint16_t', 3, 3)))
 
-f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int16_t', 1, 1), stencil_name('PackedStencil', 'int16_t', 1, 1)))
-f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int16_t', 1, 1), stencil_name('Stencil', 'int16_t', 1, 1)))
+# f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int16_t', 1, 1), stencil_name('PackedStencil', 'int16_t', 1, 1)))
+# f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int16_t', 1, 1), stencil_name('Stencil', 'int16_t', 1, 1)))
 
-f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int16_t', 1, 1), stencil_name('PackedStencil', 'int16_t', 3, 3)))
-f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int16_t', 1, 1), stencil_name('Stencil', 'int16_t', 3, 3)))
+# f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int16_t', 1, 1), stencil_name('PackedStencil', 'int16_t', 3, 3)))
+# f.write('typedef {0} {1};\n'.format(stencil_name('AxiPackedStencil', 'int16_t', 1, 1), stencil_name('Stencil', 'int16_t', 3, 3)))
 
 ast = gen_stream(axi_stencil_name('uint16_t', 1, 1))
 f.write(ast)
