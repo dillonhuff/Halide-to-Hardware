@@ -25,6 +25,9 @@ public:
         kernel(0,0) = 17;      kernel(0,1) = 4;      kernel(0,2) = 6;
         kernel(1,0) = 7;      kernel(1,1) = 19;       kernel(1,2) = 4;
         kernel(2,0) = 5;      kernel(2,1) = 21;      kernel(2,2) = 15;
+        
+        kernel.bound(x, 0, 3);
+        kernel.bound(y, 0, 3);
 
         conv(x, y) = 0;
 
@@ -59,15 +62,15 @@ public:
             .hw_accelerate(xi, xo);
 
           conv.update()
-            .unroll(r.x, ksize)
-            .unroll(r.y, ksize);
+            .unroll(r.x)
+            .unroll(r.y);
 
           conv.linebuffer();
 
           //hw_input.linebuffer();
 
           hw_input.stream_to_accelerator();
-          kernel.compute_at(hw_output, xo).unroll(x).unroll(y);
+          kernel.compute_root().unroll(x).unroll(y);
 
         } else {  // schedule to CPU
 //          kernel.compute_root();
@@ -81,9 +84,9 @@ public:
 //          hw_input.in().store_at(output, xo).compute_at(output, xi);
 //          //hw_input.in().store_root().compute_at(output, x);
           //hw_input.in().store_root().compute_at(output,x);
-          conv.update()
-            .unroll(r.x)
-            .unroll(r.y);
+          //conv.update()
+            //.unroll(r.x)
+            //.unroll(r.y);
 //          //output.compute_root();
 //
 //          kernel.compute_at(output, xo);

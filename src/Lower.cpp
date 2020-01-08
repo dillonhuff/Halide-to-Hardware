@@ -186,7 +186,9 @@ Module lower(const vector<Function> &output_funcs, const string &pipeline_name, 
 
     debug(1) << "Performing sliding window optimization...\n";
     if (!t.has_feature(Target::CoreIRHLS) && !t.has_feature(Target::CoreIR) && !t.has_feature(Target::HLS)) {
-      s = sliding_window(s, env);
+      cout << "Sliding window on: " << endl;
+      cout << s << endl;
+      //s = sliding_window(s, env);
     }
     debug(2) << "Lowering after sliding window:\n" << s << '\n';
 
@@ -197,7 +199,8 @@ Module lower(const vector<Function> &output_funcs, const string &pipeline_name, 
     //std::cout << "doing sliding window lowering pass\n";
     Stmt s_sliding;
     if (t.has_feature(Target::CoreIR)) {
-      s_sliding = sliding_window(s, env);
+      s_sliding = s;
+      //s_sliding = sliding_window(s, env);
       //s = sliding_window(s, env);
       //std::cout << "finished sliding window lowering pass\n" << s;
     } else {

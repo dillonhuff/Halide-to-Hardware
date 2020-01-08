@@ -1,10 +1,14 @@
 #include "PreprocessHWLoops.h"
 
 #include "IRMutator.h"
+#include "Simplify.h"
+#include "RemoveTrivialForLoops.h"
+#include "UnrollLoops.h"
 
 #include "coreir.h"
 
 using namespace std;
+using namespace CoreIR;
 
 namespace Halide {
 
@@ -140,7 +144,37 @@ class ROMReadOptimizer : public IRMutator {
     return romOpt;
   }
 
+  class  FuncOpCollector : public IRGraphVisitor {
+    public:
+      using IRGraphVisitor::visit;
+      map<string, vector<const Provide*> > provides;
+      map<string, vector<Call*> > calls;
+
+      void visit(const Provide* p) override {
+        map_insert(provides, p->name, p);
+      }
+  };
+
   Stmt constant_fold_rom_buffers(const Stmt& stmt) {
+    auto pre_simple = simplify(stmt);
+    cout << "Pre simplification..." << endl;
+    cout << pre_simple << endl;
+    Stmt simple = simplify(remove_trivial_for_loops(simplify(unroll_loops(pre_simple))));
+    cout << "Simplified code for stmt:" << endl;
+    cout << simple << endl;
+
+    FuncOpCollector mic;
+    simple.accept(&mic);
+
+    cout << "### New buffers in constant fold ROMs" << endl;
+    for (auto b : mic.provides) {
+      cout << "\t" << b.second.size() << " Provides to: " << b.first << endl;
+      //for (auto p : b.second) {
+        //cout << "\t\t" << p
+      //}
+    }
+
+    //internal_assert(false) << "Stopping so dillon can view\n";
     return stmt;
   }
 
