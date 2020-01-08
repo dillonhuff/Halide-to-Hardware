@@ -140,5 +140,10 @@ class ROMReadOptimizer : public IRMutator {
     return romOpt;
   }
 
+  Stmt constant_fold_rom_buffers(const Stmt& stmt) {
+    return stmt;
+  }
+
+
 }
 }

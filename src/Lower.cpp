@@ -42,6 +42,7 @@
 #include "MarkHWKernels.h"
 #include "Memoization.h"
 #include "PartitionLoops.h"
+#include "PreprocessHWLoops.h"
 #include "PurifyIndexMath.h"
 #include "Prefetch.h"
 #include "Profiling.h"
@@ -221,6 +222,7 @@ Module lower(const vector<Function> &output_funcs, const string &pipeline_name, 
     s = uniquify_variable_names(s);
     debug(2) << "Lowering after uniquifying variable names:\n" << s << "\n\n";
 
+    s = constant_fold_rom_buffers(s);
     //cout << "Should use ubuffer ? " << use_ubuffer << endl;
     vector<HWXcel> xcels;
     if (t.has_feature(Target::CoreIR) && use_ubuffer) {
