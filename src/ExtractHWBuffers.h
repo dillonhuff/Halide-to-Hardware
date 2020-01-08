@@ -17,18 +17,19 @@
 
 #include "IR.h"
 #include "ExtractHWKernelDAG.h"
+#include "HWUtils.h"
 #include "SlidingWindow.h"
 
 namespace Halide {
 namespace Internal {
 
-struct Stride {
-  int stride;
-  bool is_inverse;
-  Stride(int stride=0, bool is_inverse=false) :
-    stride(stride), is_inverse(is_inverse) {}
+//struct Stride {
+  //int stride;
+  //bool is_inverse;
+  //Stride(int stride=0, bool is_inverse=false) :
+    //stride(stride), is_inverse(is_inverse) {}
 
-};
+//};
 
 struct MergedDimSize {
   std::string loop_name;
@@ -199,7 +200,7 @@ int to_int(Expr expr);
 
 class IdentifyAddressing : public IRVisitor {
   Function func;
-  int stream_dim_idx;
+  //int stream_dim_idx;
   const Scope<Expr> &scope;
   
   using IRVisitor::visit;

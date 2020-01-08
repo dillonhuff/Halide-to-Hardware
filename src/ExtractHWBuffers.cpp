@@ -4,6 +4,7 @@
 #include "Bounds.h"
 #include "Debug.h"
 #include "Func.h"
+#include "HWUtils.h"
 #include "IRMutator.h"
 #include "IROperator.h"
 #include "IRPrinter.h"
@@ -43,17 +44,17 @@ std::ostream& operator<<(std::ostream& os, const std::vector<int>& vec) {
   return os;
 };
 
-std::ostream& operator<<(std::ostream& os, const std::vector<string>& vec) {
-  os << "[";
-  for (size_t i=0; i<vec.size(); ++i) {
-    os << vec.at(i);
-    if (i < vec.size() - 1) {
-      os << ",";
-    }
-  }
-  os << "]";
-  return os;
-};
+//std::ostream& operator<<(std::ostream& os, const std::vector<string>& vec) {
+  //os << "[";
+  //for (size_t i=0; i<vec.size(); ++i) {
+    //os << vec.at(i);
+    //if (i < vec.size() - 1) {
+      //os << ",";
+    //}
+  //}
+  //os << "]";
+  //return os;
+//};
 
 std::ostream& operator<<(std::ostream& os, const std::vector<AccessDimSize>& vec) {
   vector<Expr> range, stride, dim_ref;
@@ -233,64 +234,64 @@ std::vector<AccessDimSize> create_linear_addr(std::vector<int> ranges,
 }
 
 
-std::vector<std::string> get_tokens(const std::string &line, const std::string &delimiter) {
-    std::vector<std::string> tokens;
-    size_t prev = 0, pos = 0;
-    std::string token;
-    // copied from https://stackoverflow.com/a/7621814
-    while ((pos = line.find_first_of(delimiter, prev)) != std::string::npos) {
-        if (pos > prev) {
-            tokens.emplace_back(line.substr(prev, pos - prev));
-        }
-        prev = pos + 1;
-    }
-    if (prev < line.length()) tokens.emplace_back(line.substr(prev, std::string::npos));
-    // remove empty ones
-    std::vector<std::string> result;
-    result.reserve(tokens.size());
-    for (auto const &t : tokens)
-        if (!t.empty()) result.emplace_back(t);
-    return result;
-}
+//std::vector<std::string> get_tokens(const std::string &line, const std::string &delimiter) {
+    //std::vector<std::string> tokens;
+    //size_t prev = 0, pos = 0;
+    //std::string token;
+    //// copied from https://stackoverflow.com/a/7621814
+    //while ((pos = line.find_first_of(delimiter, prev)) != std::string::npos) {
+        //if (pos > prev) {
+            //tokens.emplace_back(line.substr(prev, pos - prev));
+        //}
+        //prev = pos + 1;
+    //}
+    //if (prev < line.length()) tokens.emplace_back(line.substr(prev, std::string::npos));
+    //// remove empty ones
+    //std::vector<std::string> result;
+    //result.reserve(tokens.size());
+    //for (auto const &t : tokens)
+        //if (!t.empty()) result.emplace_back(t);
+    //return result;
+//}
 
 
-int id_const_value(const Expr e) {
-  if (const IntImm* e_int = e.as<IntImm>()) {
-    return e_int->value;
+//int id_const_value(const Expr e) {
+  //if (const IntImm* e_int = e.as<IntImm>()) {
+    //return e_int->value;
 
-  } else if (const UIntImm* e_uint = e.as<UIntImm>()) {
-    return e_uint->value;
+  //} else if (const UIntImm* e_uint = e.as<UIntImm>()) {
+    //return e_uint->value;
 
-  } else {
-    return -1;
-  }
-}
+  //} else {
+    //return -1;
+  //}
+//}
 
 namespace {
 
 // return true if the for loop is not serialized
-bool is_parallelized(const For *op) {
-  return op->for_type == ForType::Parallel ||
-    op->for_type == ForType::Unrolled ||
-    op->for_type == ForType::Vectorized;
-}
+//bool is_parallelized(const For *op) {
+  //return op->for_type == ForType::Parallel ||
+    //op->for_type == ForType::Unrolled ||
+    //op->for_type == ForType::Vectorized;
+//}
 
-class FirstForName : public IRVisitor {
-  using IRVisitor::visit;
+//class FirstForName : public IRVisitor {
+  //using IRVisitor::visit;
   
-  void visit(const For *op) {
-    var = op->name;
-  }
-public:
-  string var;
-  FirstForName() {}
-};
+  //void visit(const For *op) {
+    //var = op->name;
+  //}
+//public:
+  //string var;
+  //FirstForName() {}
+//};
 
-std::string first_for_name(Stmt s) {
-  FirstForName ffn;
-  s.accept(&ffn);
-  return ffn.var;
-}
+//std::string first_for_name(Stmt s) {
+  //FirstForName ffn;
+  //s.accept(&ffn);
+  //return ffn.var;
+//}
 
 class ContainsCall : public IRVisitor {
   string var;
@@ -347,21 +348,21 @@ public:
 };
 
 // return if provide creates the var at this level (not recursing into serial loops)
-bool provide_at_level(Stmt s, string var = "") {
-  ExamineLoopLevel ell(var);
-  s.accept(&ell);
-  return ell.found_provide;
-}
+//bool provide_at_level(Stmt s, string var = "") {
+  //ExamineLoopLevel ell(var);
+  //s.accept(&ell);
+  //return ell.found_provide;
+//}
 
 // return if call uses the var at this level (not recursing into serial loops)
-bool call_at_level(Stmt s, string var = "") {
-  ExamineLoopLevel ell(var);
-  s.accept(&ell);
-  return ell.found_call;
-}
+//bool call_at_level(Stmt s, string var = "") {
+  //ExamineLoopLevel ell(var);
+  //s.accept(&ell);
+  //return ell.found_call;
+//}
   
-class ExpandExpr : public IRMutator2 {
-    using IRMutator2::visit;
+class ExpandExpr : public IRMutator {
+    using IRMutator::visit;
     const Scope<Expr> &scope;
   
     Expr visit(const Variable *var) override {
@@ -376,7 +377,7 @@ class ExpandExpr : public IRMutator2 {
 
     // remove for loops of length 1
     Stmt visit(const For *old_op) override {
-      Stmt s = IRMutator2::visit(old_op);
+      Stmt s = IRMutator::visit(old_op);
       const For *op = s.as<For>();
       
       if (is_one(op->extent)) {
@@ -394,19 +395,19 @@ public:
 };
 
 // Perform all the substitutions in a scope
-Expr expand_expr(Expr e, const Scope<Expr> &scope) {
-    ExpandExpr ee(scope);
-    Expr result = ee.mutate(e);
-    debug(3) << "Expanded " << e << " into " << result << "\n";
-    return result;
-}
+//Expr expand_expr(Expr e, const Scope<Expr> &scope) {
+    //ExpandExpr ee(scope);
+    //Expr result = ee.mutate(e);
+    //debug(3) << "Expanded " << e << " into " << result << "\n";
+    //return result;
+//}
 
-Stmt expand_expr(Stmt e, const Scope<Expr> &scope) {
-    ExpandExpr ee(scope);
-    Stmt result = ee.mutate(e);
-    debug(3) << "Expanded " << e << " into " << result << "\n";
-    return result;
-}
+//Stmt expand_expr(Stmt e, const Scope<Expr> &scope) {
+    //ExpandExpr ee(scope);
+    //Stmt result = ee.mutate(e);
+    //debug(3) << "Expanded " << e << " into " << result << "\n";
+    //return result;
+//}
 
 /* 
  * Used to calculate input and output block size. 
@@ -425,7 +426,7 @@ class CountBufferUsers : public IRVisitor {
       IRVisitor::visit(op);
   }
 
-  void visit(const ProducerConsumer *op) {
+  void visit(const ProducerConsumer *op) override {
     if (!op->is_producer) {
     //if (false) {
       // look at the writers (writer ports)
@@ -658,8 +659,8 @@ public:
 };
 
 
-class ReplaceForBounds : public IRMutator2 {
-  using IRMutator2::visit;
+class ReplaceForBounds : public IRMutator {
+  using IRMutator::visit;
   Scope<Expr> scope;
 
   Stmt visit(const LetStmt *op) override {
@@ -671,10 +672,10 @@ class ReplaceForBounds : public IRMutator2 {
     } else {
       //std::cout << "already have " << op->name << " set to " << scope.get(op->name) << std::endl;
     }
-    return IRMutator2::visit(op);
+    return IRMutator::visit(op);
   }
 
-  Stmt visit(const For *op) {
+  Stmt visit(const For *op) override {
     Expr min = mutate(op->min);
     Expr extent = mutate(op->extent);
     Stmt body = mutate(op->body);
@@ -884,8 +885,8 @@ public:
     var(v), compute_level(cl), found_stencil(false), func(func), stencil_bounds(stencil_bounds) {}
 };
 
-class ReplaceOutputAccessPatternRanges : public IRMutator2 {
-  using IRMutator2::visit;
+class ReplaceOutputAccessPatternRanges : public IRMutator {
+  using IRMutator::visit;
   int count;
   int max_count;
   const HWBuffer& kernel;
@@ -900,7 +901,7 @@ class ReplaceOutputAccessPatternRanges : public IRMutator2 {
       new_extent = old_op->extent;
     }
 
-    Stmt s = IRMutator2::visit(old_op);
+    Stmt s = IRMutator::visit(old_op);
     const For *op = s.as<For>();
     Stmt for_stmt = For::make(op->name, op->min, new_extent, op->for_type, op->device_api, op->body);
     
@@ -980,28 +981,28 @@ public:
 
 // Produce a vector of the loops within a for-loop-nest.
 //   Note: this can be used to find the streaming loops between the store and compute level.
-vector<string> get_loop_levels_between(Stmt s, Function func,
-                                       LoopLevel outer_level_exclusive,
-                                       LoopLevel inner_level_inclusive,
-                                       bool start_inside = false) {
-  FindInnerLoops fil(func, outer_level_exclusive, inner_level_inclusive, start_inside);
-  std::cout << "find some loops: " << s << std::endl;
-  s.accept(&fil);
-  std::cout << "got some loops: " << fil.returned_inner_loops << std::endl;
-  return fil.returned_inner_loops;
-}
+//vector<string> get_loop_levels_between(Stmt s, Function func,
+                                       //LoopLevel outer_level_exclusive,
+                                       //LoopLevel inner_level_inclusive,
+                                       //bool start_inside = false) {
+  //FindInnerLoops fil(func, outer_level_exclusive, inner_level_inclusive, start_inside);
+  //std::cout << "find some loops: " << s << std::endl;
+  //s.accept(&fil);
+  //std::cout << "got some loops: " << fil.returned_inner_loops << std::endl;
+  //return fil.returned_inner_loops;
+//}
 
 }
 
-class HWBuffers : public IRMutator2 {
+class HWBuffers : public IRMutator {
     const map<string, Function> &env;
     Scope<Expr> scope;
 
-    using IRMutator2::visit;
+    using IRMutator::visit;
   
     Stmt visit(const LetStmt *op) override {
       ScopedBinding<Expr> bind(scope, op->name, simplify(expand_expr(op->value, scope)));
-      return IRMutator2::visit(op);
+      return IRMutator::visit(op);
     }
 
     Stmt visit(const Realize *op) override {
@@ -1011,14 +1012,14 @@ class HWBuffers : public IRMutator2 {
         // If it's not in the environment it's some anonymous
         // realization that we should skip (e.g. an inlined reduction)
         if (iter == env.end()) {
-            return IRMutator2::visit(op);
+            return IRMutator::visit(op);
         }
 
         // find the function
         const FuncSchedule &sched = iter->second.schedule();
         if (!sched.is_hw_kernel()) {
           std::cout << "skipping non-hwkernel realize " << op->name << std::endl;
-          return IRMutator2::visit(op);
+          return IRMutator::visit(op);
         }
         Function func = iter->second;
 
@@ -1185,7 +1186,7 @@ class HWBuffers : public IRMutator2 {
             buffers[hwbuffer.name] = hwbuffer;
           }
           
-          return IRMutator2::visit(op);
+          return IRMutator::visit(op);
           
         } else {
           // look for a sliding window that can be used in a line buffer
@@ -1335,8 +1336,8 @@ map<string, HWBuffer> extract_hw_buffers(Stmt s, const map<string, Function> &en
 
 // Because storage folding runs before simplification, it's useful to
 // at least substitute in constants before running it, and also simplify the RHS of Let Stmts.
-class SubstituteInConstants : public IRMutator2 {
-    using IRMutator2::visit;
+class SubstituteInConstants : public IRMutator {
+    using IRMutator::visit;
 
     Scope<Expr> scope;
     Stmt visit(const LetStmt *op) override {
@@ -1391,27 +1392,27 @@ public:
   }
 };
 
-Box find_output_bounds(Stmt s, Function func,
-                       LoopLevel compute_level) {
-  FindOutputBounds fob(compute_level, func);
-  s.accept(&fob);
-  return fob.output_bounds;
-}
+//Box find_output_bounds(Stmt s, Function func,
+                       //LoopLevel compute_level) {
+  //FindOutputBounds fob(compute_level, func);
+  //s.accept(&fob);
+  //return fob.output_bounds;
+//}
 
-void find_output_scope(Stmt s, Function func,
-                       LoopLevel compute_level,
-                       Scope<Expr> &scope) {
-  FindOutputBounds fob(compute_level, func);
-  s.accept(&fob);
-  auto box = fob.output_bounds;
+//void find_output_scope(Stmt s, Function func,
+                       //LoopLevel compute_level,
+                       //Scope<Expr> &scope) {
+  //FindOutputBounds fob(compute_level, func);
+  //s.accept(&fob);
+  //auto box = fob.output_bounds;
   
-  for (int i = 0; i < func.dimensions(); i++) {
-    string stage_name = func.name() + ".s0." + func.args()[i];
-    scope.push(stage_name + ".min", box[i].min);
-    std::cout << stage_name << ".min being set to " << box[i].min << std::endl;
-    scope.push(stage_name + ".max", box[i].max);
-  }
-}
+  //for (int i = 0; i < func.dimensions(); i++) {
+    //string stage_name = func.name() + ".s0." + func.args()[i];
+    //scope.push(stage_name + ".min", box[i].min);
+    //std::cout << stage_name << ".min being set to " << box[i].min << std::endl;
+    //scope.push(stage_name + ".max", box[i].max);
+  //}
+//}
 
 
 // Second pass through hwbuffers, setting some more parameters, including the consumer outputs.
@@ -1874,7 +1875,8 @@ void IdentifyAddressing::visit(const For *op) {
 
 
 IdentifyAddressing::IdentifyAddressing(const Function& func, const Scope<Expr> &scope, const map<string,Stride> &stride_map) :
-    func(func), stream_dim_idx(0), scope(scope), storage_names(func.args()), stride_map(stride_map) {
+    //func(func), stream_dim_idx(0), scope(scope), storage_names(func.args()), stride_map(stride_map) {
+    func(func), scope(scope), storage_names(func.args()), stride_map(stride_map) {
     const auto &sch = func.definition().schedule();
     const auto &splits = sch.splits();
 

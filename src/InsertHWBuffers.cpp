@@ -24,38 +24,38 @@ using std::cout;
 
 namespace {
 
-class ExpandExpr : public IRMutator2 {
-    using IRMutator2::visit;
-    const Scope<Expr> &scope;
+//class ExpandExpr : public IRMutator {
+    //using IRMutator::visit;
+    //const Scope<Expr> &scope;
 
-    Expr visit(const Variable *var) {
-        if (scope.contains(var->name)) {
-          debug(4) << "Fully expanded " << var->name << " -> " << scope.get(var->name) << "\n";
-          //std::cout << "Fully expanded " << var->name << " -> " << scope.get(var->name) << "\n";
-          return scope.get(var->name);
+    //Expr visit(const Variable *var) {
+        //if (scope.contains(var->name)) {
+          //debug(4) << "Fully expanded " << var->name << " -> " << scope.get(var->name) << "\n";
+          ////std::cout << "Fully expanded " << var->name << " -> " << scope.get(var->name) << "\n";
+          //return scope.get(var->name);
 
 
-        } else {
-          std::cout << "Scope does not contain  " << var->name << "\n";
-          return var;
-        }
-    }
+        //} else {
+          //std::cout << "Scope does not contain  " << var->name << "\n";
+          //return var;
+        //}
+    //}
 
-public:
-    ExpandExpr(const Scope<Expr> &s) : scope(s) {}
+//public:
+    //ExpandExpr(const Scope<Expr> &s) : scope(s) {}
 
-};
+//};
 
-// Perform all the substitutions in a scope
-Expr expand_expr(Expr e, const Scope<Expr> &scope) {
-    ExpandExpr ee(scope);
-    Expr result = ee.mutate(e);
-    debug(4) << "Expanded " << e << " into " << result << "\n";
-    return result;
-}
+//// Perform all the substitutions in a scope
+//Expr expand_expr(Expr e, const Scope<Expr> &scope) {
+    //ExpandExpr ee(scope);
+    //Expr result = ee.mutate(e);
+    //debug(4) << "Expanded " << e << " into " << result << "\n";
+    //return result;
+//}
 
-class ExpandExprNoVar : public IRMutator2 {
-    using IRMutator2::visit;
+class ExpandExprNoVar : public IRMutator {
+    using IRMutator::visit;
     const Scope<Expr> &scope;
 
     Expr visit(const Variable *var) {
@@ -90,12 +90,12 @@ Expr expand_expr_no_var(Expr e, const Scope<Expr> &scope) {
 }
 
 
-class ReplaceReferencesWithBufferStencil : public IRMutator2 {
+class ReplaceReferencesWithBufferStencil : public IRMutator {
     const HWBuffer &kernel;
     const HWXcel &xcel;  // TODO not needed
     Scope<Expr> scope;
 
-    using IRMutator2::visit;
+    using IRMutator::visit;
 
     Stmt visit(const For *op) {
       std::cout << "starting this for replace\n";
@@ -135,7 +135,7 @@ class ReplaceReferencesWithBufferStencil : public IRMutator2 {
               std::cout << "nvm this is a reduction\n";
                 // it is a loop over reduction domain, and we keep it
                 // TODO add an assertion
-              return IRMutator2::visit(op);
+              return IRMutator::visit(op);
             }
             Expr new_min = 0;
             // FIXME(is this correct?): Expr new_extent = kernel.dims[dim_idx].step
@@ -165,7 +165,7 @@ class ReplaceReferencesWithBufferStencil : public IRMutator2 {
     Stmt visit(const Provide *op) {
         std::cout << "looking at this provide: " << op->name << " while kernel is " << kernel.name << "\n";
         if(op->name != kernel.name) {
-          return IRMutator2::visit(op);
+          return IRMutator::visit(op);
         } else {
             // Replace the provide node of func with provide node of func.stencil
             string stencil_name = kernel.name + ".stencil";
@@ -288,7 +288,7 @@ class ReplaceReferencesWithBufferStencil : public IRMutator2 {
 
             return expr;
         } else {
-          return IRMutator2::visit(op);
+          return IRMutator::visit(op);
         }
     }
 
@@ -590,7 +590,7 @@ Stmt add_hwbuffer(Stmt s, const HWBuffer &kernel, const HWXcel &xcel, const Scop
         vector<Expr> hwbuffer_args({update_stream_var, stream_var});
 
         std::cout << "hwbuffer num_dims=" << kernel.dims.size() << "\n";
-        hwbuffer_args.push_back(Expr(kernel.dims.size()));
+        hwbuffer_args.push_back(Expr((uint32_t) kernel.dims.size()));
 
         int num_logical_pixels = 1;
         // extract the buffer size, and put it into args
@@ -656,7 +656,7 @@ Stmt add_hwbuffer(Stmt s, const HWBuffer &kernel, const HWXcel &xcel, const Scop
                     << std::endl;
         }
 
-        hwbuffer_args.push_back(Expr(id_addr.ranges.size()));
+        hwbuffer_args.push_back(Expr((uint32_t) id_addr.ranges.size()));
         internal_assert(id_addr.ranges.size() == id_addr.dim_refs.size());
         internal_assert(id_addr.ranges.size() == id_addr.strides_in_dim.size());
 
@@ -1034,15 +1034,15 @@ Stmt transform_hwkernel(Stmt s, const HWXcel &xcel, Scope<Expr> &scope) {
 }
 
 /*
-class TransformTapStencils : public IRMutator2 {
+class TransformTapStencils : public IRMutator {
     const map<string, HWTap> &taps;
 
-    using IRMutator2::visit;
+    using IRMutator::visit;
 
     // Replace calls to ImageParam with calls to Stencil
     Expr visit(const Call *op) {
         if (taps.count(op->name) == 0) {
-          return IRMutator2::visit(op);
+          return IRMutator::visit(op);
         } else if (op->call_type == Call::Image || op->call_type == Call::Halide) {
             debug(3) << "replacing " << op->name << '\n';
             const HWTap &tap = taps.find(op->name)->second;
@@ -1061,7 +1061,7 @@ class TransformTapStencils : public IRMutator2 {
             return Call::make(op->type, stencil_name, new_args, Call::Intrinsic);
         } else {
             internal_error << "unexpected call_type\n";
-            return IRMutator2::visit(op);
+            return IRMutator::visit(op);
         }
     }
 
@@ -1071,12 +1071,12 @@ public:
 */
 
 // Perform streaming optimization for all functions
-class InsertHWBuffers : public IRMutator2 {
+class InsertHWBuffers : public IRMutator {
     const HWXcel &xcel;
     Scope<Expr> scope;
-    bool in_streaming_loops;
+    //bool in_streaming_loops;
 
-    using IRMutator2::visit;
+    using IRMutator::visit;
 
     Stmt visit(const For *op) {
         Stmt stmt;
@@ -1097,7 +1097,7 @@ class InsertHWBuffers : public IRMutator2 {
         if (!xcel.store_level.match(op->name) &&
             !is_loop_var) {
             std::cout << "just continue\n";
-            stmt = IRMutator2::visit(op);
+            stmt = IRMutator::visit(op);
 
         // compute level matches name
         } else if (xcel.compute_level.match(op->name)) {
@@ -1274,7 +1274,7 @@ class InsertHWBuffers : public IRMutator2 {
       }
     } //else
     std::cout << "realize for " << op->name << "\n";
-    return IRMutator2::visit(op);
+    return IRMutator::visit(op);
   }
 
   Stmt visit(const LetStmt *op) {
@@ -1294,7 +1294,8 @@ class InsertHWBuffers : public IRMutator2 {
 
 public:
     InsertHWBuffers(const HWXcel &accel)
-      : xcel(accel), in_streaming_loops(false) {}
+      //: xcel(accel), in_streaming_loops(false) {}
+      : xcel(accel) {}
 };
 
 Stmt insert_hwbuffers(Stmt s, const HWXcel &xcel) {
