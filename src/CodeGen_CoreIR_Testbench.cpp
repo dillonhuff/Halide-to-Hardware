@@ -36,7 +36,7 @@ vector<CoreIR_Argument> CoreIR_Closure::arguments(const Scope<Stencil_Type> &str
         std::cout << "\n";
 
     }
-    internal_assert(buffers.empty()) << "we expect no references to buffers in a hw pipeline.\n";
+    //internal_assert(buffers.empty()) << "we expect no references to buffers in a hw pipeline.\n";
     for (const pair<string, Type> &i : vars) {
         debug(3) << "var: " << i.first << "\n";
         std::cout << "var name: " << i.first << std::endl;
