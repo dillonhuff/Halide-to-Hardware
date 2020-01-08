@@ -192,6 +192,15 @@ class ROMReadOptimizer : public IRMutator {
       }
   };
 
+  class ROMLoadFolder : public IRMutator {
+    public:
+
+      FuncOpCollector mic;
+
+      using IRMutator::visit;
+
+  };
+
   Stmt constant_fold_rom_buffers(const Stmt& stmt) {
     auto pre_simple = simplify(stmt);
     cout << "Pre simplification..." << endl;
@@ -215,8 +224,12 @@ class ROMReadOptimizer : public IRMutator {
       //}
     }
 
-    internal_assert(false) << "Stopping so dillon can view\n";
-    return stmt;
+    ROMLoadFolder folder;
+    folder.mic = mic;
+    Stmt replaced = folder.mutate(stmt);
+
+    //internal_assert(false) << "Stopping so dillon can view\n";
+    return replaced;
   }
 
 
