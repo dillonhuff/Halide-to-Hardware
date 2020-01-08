@@ -152,10 +152,20 @@ class ROMReadOptimizer : public IRMutator {
 
       void visit(const Provide* p) override {
         map_insert(provides, p->name, p);
+        IRGraphVisitor::visit(p);
       }
       
+      void visit(const Load* p) override {
+        cout << "Found load from:" << p->name << endl;
+        //map_insert(calls, p->name, p);
+        IRGraphVisitor::visit(p);
+      }
+
       void visit(const Call* p) override {
+        cout << "Found call to:" << p->name << endl;
         map_insert(calls, p->name, p);
+
+        IRGraphVisitor::visit(p);
       }
 
       bool is_rom(const std::string& func) {
