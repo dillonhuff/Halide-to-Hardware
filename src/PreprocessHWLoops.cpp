@@ -148,10 +148,37 @@ class ROMReadOptimizer : public IRMutator {
     public:
       using IRGraphVisitor::visit;
       map<string, vector<const Provide*> > provides;
-      map<string, vector<Call*> > calls;
+      map<string, vector<const Call*> > calls;
 
       void visit(const Provide* p) override {
         map_insert(provides, p->name, p);
+      }
+      
+      void visit(const Call* p) override {
+        map_insert(calls, p->name, p);
+      }
+
+      bool is_rom(const std::string& func) {
+        if (!contains_key(func, provides)) {
+          // If we have no information about this function assume it is
+          // not going to be stored in a rom
+          return false;
+        }
+
+        auto ps = map_find(func, provides);
+        for (auto p : ps) {
+          for (auto v : p->values) {
+            if (!is_const(v)) {
+              return false;
+            }
+          }
+          for (auto a : p->args) {
+            if (!is_const(a)) {
+              return false;
+            }
+          }
+        }
+        return true;
       }
   };
 
@@ -169,12 +196,16 @@ class ROMReadOptimizer : public IRMutator {
     cout << "### New buffers in constant fold ROMs" << endl;
     for (auto b : mic.provides) {
       cout << "\t" << b.second.size() << " Provides to: " << b.first << endl;
+      cout << "\t\tis rom " << mic.is_rom(b.first) << endl;
+      if (contains_key(b.first, mic.calls)) {
+        cout << "\t" << map_find(b.first, mic.calls).size() << " calls to: " << b.first << endl;
+      }
       //for (auto p : b.second) {
         //cout << "\t\t" << p
       //}
     }
 
-    //internal_assert(false) << "Stopping so dillon can view\n";
+    internal_assert(false) << "Stopping so dillon can view\n";
     return stmt;
   }
 
