@@ -302,6 +302,17 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
         return ls;
       }
 
+      vector<StmtSchedule> write_loop_levels() const {
+        vector<StmtSchedule> ls;
+        for (auto r : write_ports) {
+          auto s = loop_schedule(r.first);
+          if (!elem(s, ls)) {
+            ls.push_back(s);
+          }
+        }
+        return ls;
+      }
+
       vector<StmtSchedule> read_loop_levels() const {
         vector<StmtSchedule> ls;
         for (auto r : read_ports) {
@@ -313,6 +324,16 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
         return ls;
       }
 
+      vector<StmtSchedule> write_levels() const {
+        vector<StmtSchedule> ls;
+        for (auto r : write_ports) {
+          auto s = schedule(r.first);
+          if (!elem(s, ls)) {
+            ls.push_back(s);
+          }
+        }
+        return ls;
+      }
       vector<StmtSchedule> read_levels() const {
         vector<StmtSchedule> ls;
         for (auto r : read_ports) {
@@ -538,7 +559,12 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
     }
 
     if (buffer.read_loop_levels().size() == 1) {
-      internal_assert(false) << "All reads to " << buffer.name << " at: " << buffer.read_levels()[0] << "\n";
+      if (buffer.write_loop_levels().size() == 1) {
+
+        if (buffer.read_loop_levels()[0] == buffer.write_loop_levels()[0]) {
+          internal_assert(false) << "All reads and writes to " << buffer.name << " at: " << buffer.write_loop_levels()[0] << "\n";
+        }
+      }
     }
 
     internal_assert(false) << "Cannot classify buffer: " << buffer.name << "\n";
