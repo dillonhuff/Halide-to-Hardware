@@ -307,18 +307,24 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
         activeVars.pop_back();
       }
 
+      void inc_level() {
+        auto back = activeVars.back();
+        internal_assert(is_const(back.min)) << back.min << " is not const\n";
+        activeVars[activeVars.size() - 1] = {"", simplify(back.min + 1), 1};
+      }
+
       void push_level() {
-        activeVars.push_back({"", Expr(next_level), Expr(1)});
-        next_level++;
+        activeVars.push_back({"", Expr(0), Expr(1)});
+        next_level = 1;
       }
 
       void pop_level() {
         activeVars.pop_back();
+        next_level = 1;
       }
       void visit(const Provide* p) override {
-        push_level();
+        inc_level();
         IRGraphVisitor::visit(p);
-        pop_level();
 
         map_insert(provides, p->name, p);
         write_scheds[p] = activeVars;
@@ -332,6 +338,7 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
 
       void visit(const Call* p) override {
         cout << "Found call to:" << p->name << endl;
+        inc_level();
         map_insert(calls, p->name, p);
         read_scheds[p] = activeVars;
 
