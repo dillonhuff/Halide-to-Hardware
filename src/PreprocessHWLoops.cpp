@@ -155,6 +155,10 @@ class ROMReadOptimizer : public IRMutator {
         Stmt body = this->mutate(f->body);
         return body;
       }
+
+      Stmt visit(const AssertStmt* a) override {
+        return Evaluate::make(0);
+      }
   };
 
   class  FuncOpCollector : public IRGraphVisitor {
@@ -299,7 +303,7 @@ class ROMReadOptimizer : public IRMutator {
     cout << replaced << endl;
 
     ComputeExtractor ce;
-    Stmt compute_only = ce.mutate(replaced);
+    Stmt compute_only = simplify(ce.mutate(replaced));
     cout << "Compute logic..." << endl;
     cout << compute_only << endl;
 
