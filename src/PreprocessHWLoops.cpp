@@ -268,6 +268,21 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
       // outputs
       map<string, StmtSchedule> schedules;
 
+      std::vector<Expr> port_address_stream(const std::string& str) const {
+        vector<Expr> addrs;
+        if (contains_key(str, write_ports)) {
+          for (auto arg : map_find(str, write_ports)->args) {
+            addrs.push_back(arg);
+          }
+        } else {
+          internal_assert(contains_key(str, read_ports));
+          for (auto arg : map_find(str, read_ports)->args) {
+            addrs.push_back(arg);
+          }
+        }
+        return addrs;
+      }
+
       StmtSchedule port_schedule(const std::string& str) const {
         internal_assert(contains_key(str, schedules));
         return map_find(str, schedules);
@@ -512,11 +527,11 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
         cout << "\tFound buffer: " << buf.name << endl;
         cout << "\t\tReads..." << endl;
         for (auto rd : buf.read_ports) {
-          cout << "\t\t\t" << rd.first << " : " << buf.port_schedule(rd.first) << endl;
+          cout << "\t\t\t" << rd.first << " : " << buf.port_schedule(rd.first) << " " << buf.port_address_stream(rd.first) << endl;
         }
         cout << "\t\tWrites..." << endl;
         for (auto rd : buf.write_ports) {
-          cout << "\t\t\t" << rd.first << " : " << buf.port_schedule(rd.first) << endl;
+          cout << "\t\t\t" << rd.first << " : " << buf.port_schedule(rd.first) << buf.port_address_stream(rd.first) << endl;
         }
 
         // Classify the buffer?
