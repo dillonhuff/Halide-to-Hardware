@@ -16,6 +16,14 @@ namespace Halide {
 
   namespace Internal {
 
+    template<typename D, typename R>
+      set<D> domain(const std::map<D, R>& m) {
+        set<D> d;
+        for (auto e : m) {
+          d.insert(e.first);
+        }
+        return d;
+      }
 
     // How do I assign final #s to statements?
     //  - New loop level only on for
@@ -251,8 +259,13 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
 
   class AbstractBuffer {
     public:
+      string name;
       map<string, const Provide*> write_ports;
       map<string, const Call*> read_ports;
+
+      // This is an ordinal schedule, it does not
+      // describe cycle accurate timing of inputs and
+      // outputs
       map<string, StmtSchedule> schedules;
   };
 
@@ -268,6 +281,20 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
       map<const Call*, StmtSchedule> read_scheds;
 
       FuncOpCollector() : activeVars({{"", Expr(0), Expr(1)}}), next_level(1) {}
+
+      map<string, AbstractBuffer> hwbuffers() const {
+        map<string, AbstractBuffer> bufs;
+        set<string> buffer_names = domain<string, vector<const Call*> >(calls);
+        for (auto n : domain(provides)) {
+          buffer_names.insert(n);
+        }
+
+        // Need to create port names for each read / write port
+        for (auto b : buffer_names) {
+          bufs[b] = {b, {}, {}, {}};
+        }
+        return bufs;
+      }
 
       Expr last_provide_to(const std::string& name, const vector<Expr>& args) const {
         vector<const Provide*> ps = map_find(name, provides);
@@ -376,6 +403,10 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
 
       using IRMutator::visit;
 
+      Stmt visit(const AssertStmt* ld) override {
+        return Evaluate::make(Expr(0));
+      }
+
       Expr visit(const Call* ld) override {
 
         Expr newLd = IRMutator::visit(ld);
@@ -428,45 +459,61 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
     ROMLoadFolder folder;
     folder.mic = mic;
     Stmt replaced = folder.mutate(simple);
-
+    
     cout << "After ROM simplification..." << endl;
     cout << replaced << endl;
+   
+    {
+      RealizeFinder rFinder("hw_output");
+      replaced->accept(&rFinder);
+      internal_assert(rFinder.r != nullptr);
 
-    RealizeFinder rFinder("hw_output");
-    replaced->accept(&rFinder);
-    internal_assert(rFinder.r != nullptr);
+      FuncOpCollector mic;
+      rFinder.r->body.accept(&mic);
+      cout << "Load schedules..." << endl;
+      for (auto b : mic.read_scheds) {
+        StmtSchedule s = b.second;
+        cout << "\t\t"  << b.first->name << ": " << s << endl;
+      }
+      cout << "Provide schedules..." << endl;
+      for (auto b : mic.write_scheds) {
+        //string name = b.first;
+        StmtSchedule s = b.second;
+        cout << "\t\t"  << b.first->name << ": " << s << endl;
+      }
 
-    ComputeExtractor ce;
-    Stmt compute_only = simplify(ce.mutate(rFinder.r->body));
-    cout << "Compute logic..." << endl;
-    cout << compute_only << endl;
+      cout << "--- Hardware buffers" << endl;
+      for (auto bufInfo : mic.hwbuffers()) {
+        AbstractBuffer buf = bufInfo.second;
+        cout << "\tFound buffer: " << buf.name << endl;
 
-    Closure interface;
-    rFinder.r->body.accept(&interface);
-    cout << "Interface..." << endl;
-    cout << "\tExternal vars..." << endl;
-    for (auto v : interface.vars) {
-      cout << "\t\t" << v.first << endl;
-    }
+        // Classify the buffer?
+        //  1. Pipeline
+        //  2. Stencil
+        //
+        // What about boundary conditions? Inputs and outputs?
+      }
 
-    cout << "Load schedules..." << endl;
-    for (auto b : mic.read_scheds) {
-      StmtSchedule s = b.second;
-      cout << "\t\t"  << b.first->name << ": " << s << endl;
-    }
-    cout << "Provide schedules..." << endl;
-    for (auto b : mic.write_scheds) {
-      //string name = b.first;
-      StmtSchedule s = b.second;
-      cout << "\t\t"  << b.first->name << ": " << s << endl;
-    }
 
-    cout << "\t# external buffers = " << interface.buffers.size() << endl;
-    internal_assert(interface.buffers.size() == 0);
-    //for (auto c : interface.buffers) {
+      ComputeExtractor ce;
+      Stmt compute_only = simplify(ce.mutate(rFinder.r->body));
+      cout << "Compute logic..." << endl;
+      cout << compute_only << endl;
+
+      Closure interface;
+      rFinder.r->body.accept(&interface);
+      cout << "Interface..." << endl;
+      cout << "\tExternal vars..." << endl;
+      for (auto v : interface.vars) {
+        cout << "\t\t" << v.first << endl;
+      }
+
+      cout << "\t# external buffers = " << interface.buffers.size() << endl;
+      internal_assert(interface.buffers.size() == 0);
+      //for (auto c : interface.buffers) {
       //cout << "\t\t" << c << endl;
-    //}
-
+      //}
+    }
     internal_assert(false) << "Stopping so dillon can view\n";
     return replaced;
   }
