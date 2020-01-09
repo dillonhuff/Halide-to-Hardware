@@ -176,8 +176,6 @@ class ROMReadOptimizer : public IRMutator {
       }
   };
 
-  // Maybe the way to create a compute unit wrapper
-  // is to delete all loops?
   class ComputeExtractor : public IRMutator {
     public:
       using IRMutator::visit;
@@ -241,7 +239,7 @@ typedef std::vector<VarSpec> StmtSchedule;
 
 std::ostream& operator<<(std::ostream& out, const VarSpec& e) {
   if (e.name != "") {
-    out << e.name << " : [" << e.min << " " << simplify(e.min + e.extent) << "]";
+    out << e.name << " : [" << e.min << " " << simplify(e.min + e.extent - 1) << "]";
   } else {
     internal_assert(is_const(e.min));
     internal_assert(is_one(e.extent));
@@ -402,10 +400,11 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
       }
       
       void visit(const Call* p) override {
-        cout << "Found call to:" << p->name << endl;
-        inc_level();
-        map_insert(calls, p->name, p);
-        read_scheds[p] = activeVars;
+        if (p->call_type == Call::CallType::Halide) {
+          inc_level();
+          map_insert(calls, p->name, p);
+          read_scheds[p] = activeVars;
+        }
 
         IRGraphVisitor::visit(p);
       }
@@ -502,24 +501,18 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
     cout << replaced << endl;
    
     {
+      CoreIR::Context* context = newContext();
+      auto ns = context->getNamespace("global");
+
+      RecordType* mtp = context->Record({});
+      auto m = ns->newModuleDecl("m", mtp);
+
       RealizeFinder rFinder("hw_output");
       replaced->accept(&rFinder);
       internal_assert(rFinder.r != nullptr);
 
       FuncOpCollector mic;
-      rFinder.r->body.accept(&mic);
-      cout << "Load schedules..." << endl;
-      for (auto b : mic.read_scheds) {
-        StmtSchedule s = b.second;
-        cout << "\t\t"  << b.first->name << ": " << s << endl;
-      }
-
-      cout << "Provide schedules..." << endl;
-      for (auto b : mic.write_scheds) {
-        //string name = b.first;
-        StmtSchedule s = b.second;
-        cout << "\t\t"  << b.first->name << ": " << s << endl;
-      }
+      replaced.accept(&mic);
 
       cout << "--- Hardware buffers" << endl;
       for (auto bufInfo : mic.hwbuffers()) {
@@ -539,27 +532,36 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
         //  2. Stencil
         //
         // What about boundary conditions? Inputs and outputs?
+
+        vector<pair<string, CoreIR::Type*> > ubuffer_fields;
+        RecordType* utp = context->Record(ubuffer_fields);
+        CoreIR::Module* ubuffer = ns->newModuleDecl("unified_buffer_" + buf.name, utp);
+
+        cout << "Unified buffer..." << endl;
+        ubuffer->print();
       }
 
 
-      ComputeExtractor ce;
-      Stmt compute_only = simplify(ce.mutate(rFinder.r->body));
-      cout << "Compute logic..." << endl;
-      cout << compute_only << endl;
+      //ComputeExtractor ce;
+      //Stmt compute_only = simplify(ce.mutate(rFinder.r->body));
+      //cout << "Compute logic..." << endl;
+      //cout << compute_only << endl;
 
-      Closure interface;
-      rFinder.r->body.accept(&interface);
-      cout << "Interface..." << endl;
-      cout << "\tExternal vars..." << endl;
-      for (auto v : interface.vars) {
-        cout << "\t\t" << v.first << endl;
-      }
-
-      cout << "\t# external buffers = " << interface.buffers.size() << endl;
-      internal_assert(interface.buffers.size() == 0);
-      //for (auto c : interface.buffers) {
-      //cout << "\t\t" << c << endl;
+      //Closure interface;
+      //rFinder.r->body.accept(&interface);
+      //cout << "Interface..." << endl;
+      //cout << "\tExternal vars..." << endl;
+      //for (auto v : interface.vars) {
+        //cout << "\t\t" << v.first << endl;
       //}
+
+      //cout << "\t# external buffers = " << interface.buffers.size() << endl;
+      //internal_assert(interface.buffers.size() == 0);
+
+      cout << "Output module" << endl;
+      m->print();
+
+      deleteContext(context);
     }
     internal_assert(false) << "Stopping so dillon can view\n";
     return replaced;
