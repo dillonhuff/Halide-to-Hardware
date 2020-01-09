@@ -145,6 +145,18 @@ class ROMReadOptimizer : public IRMutator {
     return romOpt;
   }
 
+  // Maybe the way to create a compute unit wrapper
+  // is to delete all loops?
+  class ComputeExtractor : public IRMutator {
+    public:
+      using IRMutator::visit;
+
+      Stmt visit(const For* f) override {
+        Stmt body = this->mutate(f->body);
+        return body;
+      }
+  };
+
   class  FuncOpCollector : public IRGraphVisitor {
     public:
       using IRGraphVisitor::visit;
@@ -231,19 +243,11 @@ class ROMReadOptimizer : public IRMutator {
       using IRMutator::visit;
 
       Expr visit(const Call* ld) override {
-        //cout << "Mutating: " << ld->name << endl;
-        //internal_assert(false);
 
         Expr newLd = IRMutator::visit(ld);
 
         if (ld->call_type != Call::CallType::Halide) {
           return newLd;
-          //return Call::make(ld->type, ld->name, ld->args, ld->call_type,
-              //ld->func,
-              //ld->value_index,
-              //ld->image,
-              //ld->param);
-
         }
         if (mic.is_rom(ld->name)) {
           cout << "found call to rom: " << ld->name << endl;
@@ -263,11 +267,6 @@ class ROMReadOptimizer : public IRMutator {
         }
 
         return newLd;
-        //return Call::make(ld->type, ld->name, ld->args, ld->call_type,
-            //ld->func,
-            //ld->value_index,
-            //ld->image,
-            //ld->param);
       }
 
   };
@@ -299,7 +298,12 @@ class ROMReadOptimizer : public IRMutator {
     cout << "After ROM simplification..." << endl;
     cout << replaced << endl;
 
-    //internal_assert(false) << "Stopping so dillon can view\n";
+    ComputeExtractor ce;
+    Stmt compute_only = ce.mutate(replaced);
+    cout << "Compute logic..." << endl;
+    cout << compute_only << endl;
+
+    internal_assert(false) << "Stopping so dillon can view\n";
     return replaced;
   }
 
