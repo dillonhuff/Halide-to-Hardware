@@ -188,7 +188,7 @@ Module lower(const vector<Function> &output_funcs, const string &pipeline_name, 
     if (!t.has_feature(Target::CoreIRHLS) && !t.has_feature(Target::CoreIR) && !t.has_feature(Target::HLS)) {
       cout << "Sliding window on: " << endl;
       cout << s << endl;
-      //s = sliding_window(s, env);
+      s = sliding_window(s, env);
     }
     debug(2) << "Lowering after sliding window:\n" << s << '\n';
 
@@ -200,7 +200,7 @@ Module lower(const vector<Function> &output_funcs, const string &pipeline_name, 
     Stmt s_sliding;
     if (t.has_feature(Target::CoreIR)) {
       s_sliding = s;
-      //s_sliding = sliding_window(s, env);
+      s_sliding = sliding_window(s, env);
       //s = sliding_window(s, env);
       //std::cout << "finished sliding window lowering pass\n" << s;
     } else {
@@ -236,8 +236,8 @@ Module lower(const vector<Function> &output_funcs, const string &pipeline_name, 
       //cout << "Pre-unrolled: " << endl;
       //cout << s << endl;
       //std::cout << "Extracting sliding from\n" << s_sliding << std::endl;
-      //xcels = extract_hw_accelerators(s, env, inlined_stages);
-      xcels = extract_hw_accelerators(s_sliding, env, inlined_stages);
+      xcels = extract_hw_accelerators(s, env, inlined_stages);
+      //xcels = extract_hw_accelerators(s_sliding, env, inlined_stages);
       //for (auto hwbuffer : xcels.at(0).hwbuffers) {
         //std::cout << hwbuffer.first << " is lower w/ inline=" << hwbuffer.second.is_inlined << std::endl;
       //}

@@ -3,6 +3,7 @@
 #include "IRMutator.h"
 #include "Simplify.h"
 #include "RemoveTrivialForLoops.h"
+#include "HWUtils.h"
 #include "UnrollLoops.h"
 
 #include "coreir.h"
@@ -150,8 +151,33 @@ class ROMReadOptimizer : public IRMutator {
       map<string, vector<const Provide*> > provides;
       map<string, vector<const Call*> > calls;
 
-      Expr last_provide_to(const vector<Expr>& args) const {
-        internal_assert(false);
+      Expr last_provide_to(const std::string& name, const vector<Expr>& args) const {
+        vector<const Provide*> ps = map_find(name, provides);
+        CoreIR::reverse(ps);
+        for (auto p : ps) {
+          bool args_match = true;
+          internal_assert(p->args.size() == args.size());
+          for (size_t i = 0; i < p->args.size(); i++) {
+            auto pa = p->args.at(i);
+            auto a = args.at(i);
+            if (!is_const(pa) || !is_const(a)) {
+              args_match = false;
+              break;
+            }
+            if (id_const_value(pa) != id_const_value(a)) {
+              args_match = false;
+              break;
+            }
+          }
+
+          if (args_match) {
+            internal_assert(p->values.size() == 1);
+            return p->values.at(0);
+          }
+        }
+
+        internal_assert(false) << "Could not find provide to location: " << name << "\n";
+          //<< args << end;
         return args[0];
       }
 
@@ -232,7 +258,7 @@ class ROMReadOptimizer : public IRMutator {
           }
 
           if (all_const_addr) {
-            return mic.last_provide_to(ld->args);
+            return mic.last_provide_to(ld->name, ld->args);
           }
         }
 
@@ -268,9 +294,12 @@ class ROMReadOptimizer : public IRMutator {
 
     ROMLoadFolder folder;
     folder.mic = mic;
-    Stmt replaced = folder.mutate(stmt);
+    Stmt replaced = folder.mutate(simple);
 
-    internal_assert(false) << "Stopping so dillon can view\n";
+    cout << "After ROM simplification..." << endl;
+    cout << replaced << endl;
+
+    //internal_assert(false) << "Stopping so dillon can view\n";
     return replaced;
   }
 
