@@ -553,14 +553,18 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
       //Stmt compute_only = simplify(ce.mutate(rFinder.r->body));
       //cout << "Compute logic..." << endl;
       //cout << compute_only << endl;
+      vector<pair<string, CoreIR::Type*> > compute_fields{{"clk", context->Named("coreir.clkIn")}, {"rst", context->BitIn()}};
+      auto ctp = context->Record(compute_fields);
+      ns->newModuleDecl("compute_unit", ctp);
+      mDef->addInstance("compute_unit", "global.compute_unit");
 
-      //Closure interface;
-      //rFinder.r->body.accept(&interface);
-      //cout << "Interface..." << endl;
-      //cout << "\tExternal vars..." << endl;
-      //for (auto v : interface.vars) {
-        //cout << "\t\t" << v.first << endl;
-      //}
+      Closure interface;
+      rFinder.r->body.accept(&interface);
+      cout << "Interface..." << endl;
+      cout << "\tExternal vars..." << endl;
+      for (auto v : interface.vars) {
+        cout << "\t\t" << v.first << endl;
+      }
 
       //cout << "\t# external buffers = " << interface.buffers.size() << endl;
       //internal_assert(interface.buffers.size() == 0);
