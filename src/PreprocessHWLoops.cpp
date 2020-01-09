@@ -267,6 +267,11 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
       // describe cycle accurate timing of inputs and
       // outputs
       map<string, StmtSchedule> schedules;
+
+      StmtSchedule port_schedule(const std::string& str) const {
+        internal_assert(contains_key(str, schedules));
+        return map_find(str, schedules);
+      }
   };
 
   class FuncOpCollector : public IRGraphVisitor {
@@ -290,26 +295,32 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
         }
 
         // Need to create port names for each read / write port
+
         for (auto b : buffer_names) {
+          map<string, StmtSchedule> schedules;
           int rd_num = 0;
           map<string, const Call*> reads;
           for (auto rd : calls) {
             if (rd.first == b) {
               for (auto rdOp : rd.second) {
                 reads["read_port_" + to_string(rd_num)] = rdOp;
+                schedules["read_port_" + to_string(rd_num)] = map_find(rdOp, read_scheds);
                 rd_num++;
               }
             }
           }
-          //int wr_num = 0;
+          int wr_num = 0;
           map<string, const Provide*> writes;
-          //for (auto rd : provides) {
-            //if (rd.first == b) {
-              //reads["write_port_" + to_string(wr_num)] = rd.second;
-              //wr_num++;
-            //}
-          //}
-          bufs[b] = {b, writes, reads, {}};
+          for (auto rd : provides) {
+            if (rd.first == b) {
+              for (auto rdOp : rd.second) {
+                writes["write_port_" + to_string(wr_num)] = rdOp;
+                schedules["write_port_" + to_string(wr_num)] = map_find(rdOp, write_scheds);
+                wr_num++;
+              }
+            }
+          }
+          bufs[b] = {b, writes, reads, schedules};
         }
         return bufs;
       }
@@ -368,19 +379,13 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
         next_level = 1;
       }
       void visit(const Provide* p) override {
-        inc_level();
         IRGraphVisitor::visit(p);
 
+        inc_level();
         map_insert(provides, p->name, p);
         write_scheds[p] = activeVars;
       }
       
-      void visit(const Load* p) override {
-        cout << "Found load from:" << p->name << endl;
-        //map_insert(calls, p->name, p);
-        IRGraphVisitor::visit(p);
-      }
-
       void visit(const Call* p) override {
         cout << "Found call to:" << p->name << endl;
         inc_level();
@@ -493,6 +498,7 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
         StmtSchedule s = b.second;
         cout << "\t\t"  << b.first->name << ": " << s << endl;
       }
+
       cout << "Provide schedules..." << endl;
       for (auto b : mic.write_scheds) {
         //string name = b.first;
@@ -506,11 +512,11 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
         cout << "\tFound buffer: " << buf.name << endl;
         cout << "\t\tReads..." << endl;
         for (auto rd : buf.read_ports) {
-          cout << "\t\t\t" << rd.first << endl;
+          cout << "\t\t\t" << rd.first << " : " << buf.port_schedule(rd.first) << endl;
         }
         cout << "\t\tWrites..." << endl;
         for (auto rd : buf.write_ports) {
-          cout << "\t\t\t" << rd.first << endl;
+          cout << "\t\t\t" << rd.first << " : " << buf.port_schedule(rd.first) << endl;
         }
 
         // Classify the buffer?
