@@ -523,22 +523,19 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
       for (auto bufInfo : mic.hwbuffers()) {
         AbstractBuffer buf = bufInfo.second;
         cout << "\tFound buffer: " << buf.name << endl;
+        vector<pair<string, CoreIR::Type*> > ubuffer_fields{{"clk", context->Named("coreir.clkIn")}, {"rst", context->BitIn()}};
         cout << "\t\tReads..." << endl;
         for (auto rd : buf.read_ports) {
           cout << "\t\t\t" << rd.first << " : " << buf.port_schedule(rd.first) << " " << buf.port_address_stream(rd.first) << endl;
+          ubuffer_fields.push_back({rd.first + "_valid", context->Bit()});
+          ubuffer_fields.push_back({rd.first, context->Bit()->Arr(16)});
         }
         cout << "\t\tWrites..." << endl;
         for (auto rd : buf.write_ports) {
           cout << "\t\t\t" << rd.first << " : " << buf.port_schedule(rd.first) << buf.port_address_stream(rd.first) << endl;
+          ubuffer_fields.push_back({rd.first + "_en", context->Bit()});
+          ubuffer_fields.push_back({rd.first, context->BitIn()->Arr(16)});
         }
-
-        // Classify the buffer?
-        //  1. Pipeline
-        //  2. Stencil
-        //
-        // What about boundary conditions? Inputs and outputs?
-
-        vector<pair<string, CoreIR::Type*> > ubuffer_fields{{"clk", context->Named("coreir.clkIn")}, {"rst", context->BitIn()}};
 
         RecordType* utp = context->Record(ubuffer_fields);
         CoreIR::Module* ubuffer = ns->newModuleDecl("unified_buffer_" + buf.name, utp);
