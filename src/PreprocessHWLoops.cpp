@@ -145,15 +145,58 @@ class ROMReadOptimizer : public IRMutator {
     return romOpt;
   }
 
+  class RealizeFinder : public IRGraphVisitor {
+    public:
+
+      using IRGraphVisitor::visit;
+
+      const Realize* r;
+      string target;
+
+      RealizeFinder(const std::string& target_) : r(nullptr), target(target_) {}
+
+      void visit(const Realize* rl) override {
+        cout << "Searching realize: " << rl->name << " for " << target << endl;
+        if (rl->name == target) {
+          r = rl;
+        } else {
+          rl->body->accept(this);
+        }
+      }
+  };
+
   // Maybe the way to create a compute unit wrapper
   // is to delete all loops?
   class ComputeExtractor : public IRMutator {
     public:
       using IRMutator::visit;
 
+      int ld_inst;
+      int st_inst;
+
+      ComputeExtractor() : ld_inst(0), st_inst(0) {}
+
+      Stmt visit(const Provide* p) override {
+        vector<Expr> vals;
+        for (auto v : p->values) {
+          vals.push_back(this->mutate(v));
+        }
+        auto fresh = Provide::make("compute_result", vals, {Expr(st_inst)});
+        st_inst++;
+        return fresh;
+      }
+
       Stmt visit(const For* f) override {
         Stmt body = this->mutate(f->body);
         return body;
+      }
+      
+      Stmt visit(const Realize* a) override {
+        return this->mutate(a->body);
+      }
+
+      Stmt visit(const ProducerConsumer* a) override {
+        return this->mutate(a->body);
       }
 
       Stmt visit(const AssertStmt* a) override {
@@ -302,8 +345,12 @@ class ROMReadOptimizer : public IRMutator {
     cout << "After ROM simplification..." << endl;
     cout << replaced << endl;
 
+    RealizeFinder rFinder("hw_output");
+    replaced->accept(&rFinder);
+    internal_assert(rFinder.r != nullptr);
+
     ComputeExtractor ce;
-    Stmt compute_only = simplify(ce.mutate(replaced));
+    Stmt compute_only = simplify(ce.mutate(rFinder.r->body));
     cout << "Compute logic..." << endl;
     cout << compute_only << endl;
 
