@@ -229,9 +229,20 @@ class VarSpec {
 
 typedef std::vector<VarSpec> StmtSchedule;
 
+std::ostream& operator<<(std::ostream& out, const VarSpec& e) {
+  if (e.name != "") {
+    out << e.name << " : [" << e.min << " " << simplify(e.min + e.extent) << "]";
+  } else {
+    internal_assert(is_const(e.min));
+    internal_assert(is_one(e.extent));
+    out << e.min;
+  }
+  return out;
+}
+
 std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
   for (auto e : s ) {
-    out << e.name << " : [" << e.min << " " << simplify(e.min + e.extent) << "], ";
+    out << e << ", ";
   }
   return out;
 }
@@ -243,15 +254,18 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
       map<string, StmtSchedule> schedules;
   };
 
-  class  FuncOpCollector : public IRGraphVisitor {
+  class FuncOpCollector : public IRGraphVisitor {
     public:
       using IRGraphVisitor::visit;
 
       vector<VarSpec> activeVars;
+      int next_level;
       map<string, vector<const Provide*> > provides;
       map<string, vector<const Call*> > calls;
       map<const Provide*, StmtSchedule> write_scheds;
       map<const Call*, StmtSchedule> read_scheds;
+
+      FuncOpCollector() : activeVars({{"", Expr(0), Expr(1)}}), next_level(1) {}
 
       Expr last_provide_to(const std::string& name, const vector<Expr>& args) const {
         vector<const Provide*> ps = map_find(name, provides);
@@ -285,14 +299,27 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
 
       void visit(const For* f) override {
         activeVars.push_back({f->name, f->min, f->extent});
+        push_level();
         f->body.accept(this);
+        pop_level();
         activeVars.pop_back();
       }
 
+      void push_level() {
+        activeVars.push_back({"", Expr(next_level), Expr(1)});
+        next_level++;
+      }
+
+      void pop_level() {
+        activeVars.pop_back();
+      }
       void visit(const Provide* p) override {
+        push_level();
+        IRGraphVisitor::visit(p);
+        pop_level();
+
         map_insert(provides, p->name, p);
         write_scheds[p] = activeVars;
-        IRGraphVisitor::visit(p);
       }
       
       void visit(const Load* p) override {
