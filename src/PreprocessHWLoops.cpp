@@ -176,6 +176,16 @@ class ROMReadOptimizer : public IRMutator {
 
       ComputeExtractor() : ld_inst(0), st_inst(0) {}
 
+      Expr visit(const Call* p) override {
+        auto fresh = Call::make(p->type,
+            "compute_input",
+            {Expr(ld_inst)},
+            p->call_type);
+
+        ld_inst++;
+        return fresh;
+      }
+
       Stmt visit(const Provide* p) override {
         vector<Expr> vals;
         for (auto v : p->values) {
