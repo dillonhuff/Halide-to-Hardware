@@ -1,5 +1,6 @@
 #include "PreprocessHWLoops.h"
 
+#include "Closure.h"
 #include "IRMutator.h"
 #include "Simplify.h"
 #include "RemoveTrivialForLoops.h"
@@ -219,11 +220,31 @@ class ROMReadOptimizer : public IRMutator {
       }
   };
 
+class VarSpec {
+  public:
+    std::string name;
+    Expr min;
+    Expr extent;
+};
+
+typedef std::vector<VarSpec> StmtSchedule;
+
+  class AbstractBuffer {
+    public:
+      map<string, const Provide*> write_ports;
+      map<string, const Call*> read_ports;
+      map<string, StmtSchedule> schedules;
+  };
+
   class  FuncOpCollector : public IRGraphVisitor {
     public:
       using IRGraphVisitor::visit;
+
+      vector<VarSpec> activeVars;
       map<string, vector<const Provide*> > provides;
       map<string, vector<const Call*> > calls;
+      map<const Provide*, StmtSchedule> write_scheds;
+      map<const Call*, StmtSchedule> read_scheds;
 
       Expr last_provide_to(const std::string& name, const vector<Expr>& args) const {
         vector<const Provide*> ps = map_find(name, provides);
@@ -255,8 +276,15 @@ class ROMReadOptimizer : public IRMutator {
         return args[0];
       }
 
+      void visit(const For* f) override {
+        activeVars.push_back({f->name, f->min, f->extent});
+        f->body.accept(this);
+        activeVars.pop_back();
+      }
+
       void visit(const Provide* p) override {
         map_insert(provides, p->name, p);
+        write_scheds[p] = activeVars;
         IRGraphVisitor::visit(p);
       }
       
@@ -269,6 +297,7 @@ class ROMReadOptimizer : public IRMutator {
       void visit(const Call* p) override {
         cout << "Found call to:" << p->name << endl;
         map_insert(calls, p->name, p);
+        read_scheds[p] = activeVars;
 
         IRGraphVisitor::visit(p);
       }
@@ -368,6 +397,20 @@ class ROMReadOptimizer : public IRMutator {
     Stmt compute_only = simplify(ce.mutate(rFinder.r->body));
     cout << "Compute logic..." << endl;
     cout << compute_only << endl;
+
+    Closure interface;
+    rFinder.r->body.accept(&interface);
+    cout << "Interface..." << endl;
+    cout << "\tExternal vars..." << endl;
+    for (auto v : interface.vars) {
+      cout << "\t\t" << v.first << endl;
+    }
+
+    cout << "\t# external buffers = " << interface.buffers.size() << endl;
+    internal_assert(interface.buffers.size() == 0);
+    //for (auto c : interface.buffers) {
+      //cout << "\t\t" << c << endl;
+    //}
 
     internal_assert(false) << "Stopping so dillon can view\n";
     return replaced;
