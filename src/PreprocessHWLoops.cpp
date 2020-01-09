@@ -150,6 +150,11 @@ class ROMReadOptimizer : public IRMutator {
       map<string, vector<const Provide*> > provides;
       map<string, vector<const Call*> > calls;
 
+      Expr last_provide_to(const vector<Expr>& args) const {
+        internal_assert(false);
+        return args[0];
+      }
+
       void visit(const Provide* p) override {
         map_insert(provides, p->name, p);
         IRGraphVisitor::visit(p);
@@ -168,7 +173,7 @@ class ROMReadOptimizer : public IRMutator {
         IRGraphVisitor::visit(p);
       }
 
-      bool is_rom(const std::string& func) {
+      bool is_rom(const std::string& func) const {
         if (!contains_key(func, provides)) {
           // If we have no information about this function assume it is
           // not going to be stored in a rom
@@ -199,6 +204,46 @@ class ROMReadOptimizer : public IRMutator {
 
       using IRMutator::visit;
 
+      Expr visit(const Call* ld) override {
+        //cout << "Mutating: " << ld->name << endl;
+        //internal_assert(false);
+
+        Expr newLd = IRMutator::visit(ld);
+
+        if (ld->call_type != Call::CallType::Halide) {
+          return newLd;
+          //return Call::make(ld->type, ld->name, ld->args, ld->call_type,
+              //ld->func,
+              //ld->value_index,
+              //ld->image,
+              //ld->param);
+
+        }
+        if (mic.is_rom(ld->name)) {
+          cout << "found call to rom: " << ld->name << endl;
+          //internal_assert(false) << ld->name << " is rom!\n";
+          bool all_const_addr = true;
+          for (auto a : ld->args) {
+            if (!is_const(a)) {
+              cout << "\targument: " << a << " is not const" << endl;
+              all_const_addr = false;
+              break;
+            }
+          }
+
+          if (all_const_addr) {
+            return mic.last_provide_to(ld->args);
+          }
+        }
+
+        return newLd;
+        //return Call::make(ld->type, ld->name, ld->args, ld->call_type,
+            //ld->func,
+            //ld->value_index,
+            //ld->image,
+            //ld->param);
+      }
+
   };
 
   Stmt constant_fold_rom_buffers(const Stmt& stmt) {
@@ -219,16 +264,13 @@ class ROMReadOptimizer : public IRMutator {
       if (contains_key(b.first, mic.calls)) {
         cout << "\t" << map_find(b.first, mic.calls).size() << " calls to: " << b.first << endl;
       }
-      //for (auto p : b.second) {
-        //cout << "\t\t" << p
-      //}
     }
 
     ROMLoadFolder folder;
     folder.mic = mic;
     Stmt replaced = folder.mutate(stmt);
 
-    //internal_assert(false) << "Stopping so dillon can view\n";
+    internal_assert(false) << "Stopping so dillon can view\n";
     return replaced;
   }
 
