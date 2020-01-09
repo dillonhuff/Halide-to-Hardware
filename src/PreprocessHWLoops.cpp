@@ -233,7 +233,28 @@ class VarSpec {
     std::string name;
     Expr min;
     Expr extent;
+
+    bool is_const() const {
+      return name == "";
+    }
+
+    int const_value() const {
+      internal_assert(is_const());
+      return id_const_value(min);
+    }
 };
+
+bool operator==(const VarSpec& a, const VarSpec& b) {
+  if (a.is_const() != b.is_const()) {
+    return false;
+  }
+
+  if (a.is_const()) {
+    return a.const_value() == b.const_value();
+  } else {
+    return a.name == b.name;
+  }
+}
 
 typedef std::vector<VarSpec> StmtSchedule;
 
@@ -265,6 +286,43 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
       // describe cycle accurate timing of inputs and
       // outputs
       map<string, StmtSchedule> schedules;
+
+      StmtSchedule schedule(const std::string& port_name) const {
+        return map_find(port_name, schedules);
+      }
+
+      StmtSchedule loop_schedule(const std::string& port_name) const {
+        auto s = map_find(port_name, schedules);
+        StmtSchedule ls;
+        for (auto r : s) {
+          if (!r.is_const()) {
+            ls.push_back(r);
+          }
+        }
+        return ls;
+      }
+
+      vector<StmtSchedule> read_loop_levels() const {
+        vector<StmtSchedule> ls;
+        for (auto r : read_ports) {
+          auto s = loop_schedule(r.first);
+          if (!elem(s, ls)) {
+            ls.push_back(s);
+          }
+        }
+        return ls;
+      }
+
+      vector<StmtSchedule> read_levels() const {
+        vector<StmtSchedule> ls;
+        for (auto r : read_ports) {
+          auto s = schedule(r.first);
+          if (!elem(s, ls)) {
+            ls.push_back(s);
+          }
+        }
+        return ls;
+      }
 
       std::vector<Expr> port_address_stream(const std::string& str) const {
         vector<Expr> addrs;
@@ -474,7 +532,16 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
   };
 
   void synthesize_ubuffer(CoreIR::ModuleDef* def, AbstractBuffer& buffer) {
+    if (buffer.read_ports.size() == 0) {
+      // Buffer is write only, so it has no effect
+      return;
+    }
 
+    if (buffer.read_loop_levels().size() == 1) {
+      internal_assert(false) << "All reads to " << buffer.name << " at: " << buffer.read_levels()[0] << "\n";
+    }
+
+    internal_assert(false) << "Cannot classify buffer: " << buffer.name << "\n";
   }
 
   Stmt constant_fold_rom_buffers(const Stmt& stmt) {
