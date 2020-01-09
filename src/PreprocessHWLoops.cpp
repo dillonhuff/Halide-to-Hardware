@@ -17,6 +17,8 @@ namespace Halide {
   namespace Internal {
 
 
+    // How do I assign final #s to statements?
+    //  - New loop level only on for
     bool MemoryInfoCollector::isROM(const std::string& name) const {
       return CoreIR::elem(name, roms());
     }
@@ -440,6 +442,11 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
       cout << "\t\t" << v.first << endl;
     }
 
+    cout << "Load schedules..." << endl;
+    for (auto b : mic.read_scheds) {
+      StmtSchedule s = b.second;
+      cout << "\t\t"  << b.first->name << ": " << s << endl;
+    }
     cout << "Provide schedules..." << endl;
     for (auto b : mic.write_scheds) {
       //string name = b.first;
