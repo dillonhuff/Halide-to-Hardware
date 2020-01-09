@@ -229,6 +229,13 @@ class VarSpec {
 
 typedef std::vector<VarSpec> StmtSchedule;
 
+std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
+  for (auto e : s ) {
+    out << e.name << " : [" << e.min << " " << simplify(e.min + e.extent) << "], ";
+  }
+  return out;
+}
+
   class AbstractBuffer {
     public:
       map<string, const Provide*> write_ports;
@@ -404,6 +411,13 @@ typedef std::vector<VarSpec> StmtSchedule;
     cout << "\tExternal vars..." << endl;
     for (auto v : interface.vars) {
       cout << "\t\t" << v.first << endl;
+    }
+
+    cout << "Provide schedules..." << endl;
+    for (auto b : mic.write_scheds) {
+      //string name = b.first;
+      StmtSchedule s = b.second;
+      cout << "\t\t"  << b.first->name << ": " << s << endl;
     }
 
     cout << "\t# external buffers = " << interface.buffers.size() << endl;
