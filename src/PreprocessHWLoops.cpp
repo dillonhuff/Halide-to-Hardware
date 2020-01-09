@@ -287,6 +287,14 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
       // outputs
       map<string, StmtSchedule> schedules;
 
+      set<string> port_names() const {
+        auto names = domain(write_ports);
+        for (auto n : domain(read_ports)) {
+          names.insert(n);
+        }
+        return names;
+      }
+
       StmtSchedule schedule(const std::string& port_name) const {
         return map_find(port_name, schedules);
       }
@@ -343,6 +351,11 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
           }
         }
         return ls;
+      }
+
+      bool lt(const VarSpec& a, const VarSpec& b) const {
+        internal_assert(a.is_const() && b.is_const());
+        return a.const_value() < b.const_value();
       }
 
       std::vector<Expr> port_address_stream(const std::string& str) const {
@@ -560,8 +573,15 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
 
     if (buffer.read_loop_levels().size() == 1) {
       if (buffer.write_loop_levels().size() == 1) {
-
         if (buffer.read_loop_levels()[0] == buffer.write_loop_levels()[0]) {
+          set<string> ports = buffer.port_names();
+          vector<string> port_list(begin(ports), end(ports));
+          sort(begin(port_list), end(port_list), [buffer](const std::string& pta, const std::string& ptb) {
+              return buffer.lt(buffer.schedule(pta).back(), buffer.schedule(ptb).back());
+          });
+          for (auto p : port_list) {
+            cout << "\t" << p << ": " << buffer.schedule(p) << endl;
+          }
           internal_assert(false) << "All reads and writes to " << buffer.name << " at: " << buffer.write_loop_levels()[0] << "\n";
         }
       }
