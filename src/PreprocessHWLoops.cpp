@@ -473,6 +473,10 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
 
   };
 
+  void synthesize_ubuffer(CoreIR::ModuleDef* def, AbstractBuffer& buffer) {
+
+  }
+
   Stmt constant_fold_rom_buffers(const Stmt& stmt) {
     auto pre_simple = simplify(stmt);
     cout << "Pre simplification..." << endl;
@@ -504,8 +508,9 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
       CoreIR::Context* context = newContext();
       auto ns = context->getNamespace("global");
 
-      RecordType* mtp = context->Record({});
+      RecordType* mtp = context->Record({{"clk", context->Named("coreir.clkIn")}, {"rst", context->BitIn()}});
       auto m = ns->newModuleDecl("m", mtp);
+      auto mDef = m->newModuleDef();
 
       RealizeFinder rFinder("hw_output");
       replaced->accept(&rFinder);
@@ -533,14 +538,19 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
         //
         // What about boundary conditions? Inputs and outputs?
 
-        vector<pair<string, CoreIR::Type*> > ubuffer_fields;
+        vector<pair<string, CoreIR::Type*> > ubuffer_fields{{"clk", context->Named("coreir.clkIn")}, {"rst", context->BitIn()}};
+
         RecordType* utp = context->Record(ubuffer_fields);
         CoreIR::Module* ubuffer = ns->newModuleDecl("unified_buffer_" + buf.name, utp);
+        auto def = ubuffer->newModuleDef();
+        synthesize_ubuffer(def, buf);
+        ubuffer->setDef(def);
 
         cout << "Unified buffer..." << endl;
         ubuffer->print();
-      }
 
+        mDef->addInstance("ubuffer_" + buf.name, "global.unified_buffer_" + buf.name);
+      }
 
       //ComputeExtractor ce;
       //Stmt compute_only = simplify(ce.mutate(rFinder.r->body));
@@ -558,6 +568,7 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
       //cout << "\t# external buffers = " << interface.buffers.size() << endl;
       //internal_assert(interface.buffers.size() == 0);
 
+      m->setDef(mDef);
       cout << "Output module" << endl;
       m->print();
 
