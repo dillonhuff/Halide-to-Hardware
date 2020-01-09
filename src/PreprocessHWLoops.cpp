@@ -291,7 +291,25 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
 
         // Need to create port names for each read / write port
         for (auto b : buffer_names) {
-          bufs[b] = {b, {}, {}, {}};
+          int rd_num = 0;
+          map<string, const Call*> reads;
+          for (auto rd : calls) {
+            if (rd.first == b) {
+              for (auto rdOp : rd.second) {
+                reads["read_port_" + to_string(rd_num)] = rdOp;
+                rd_num++;
+              }
+            }
+          }
+          //int wr_num = 0;
+          map<string, const Provide*> writes;
+          //for (auto rd : provides) {
+            //if (rd.first == b) {
+              //reads["write_port_" + to_string(wr_num)] = rd.second;
+              //wr_num++;
+            //}
+          //}
+          bufs[b] = {b, writes, reads, {}};
         }
         return bufs;
       }
@@ -486,6 +504,14 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
       for (auto bufInfo : mic.hwbuffers()) {
         AbstractBuffer buf = bufInfo.second;
         cout << "\tFound buffer: " << buf.name << endl;
+        cout << "\t\tReads..." << endl;
+        for (auto rd : buf.read_ports) {
+          cout << "\t\t\t" << rd.first << endl;
+        }
+        cout << "\t\tWrites..." << endl;
+        for (auto rd : buf.write_ports) {
+          cout << "\t\t\t" << rd.first << endl;
+        }
 
         // Classify the buffer?
         //  1. Pipeline
