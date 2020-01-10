@@ -287,6 +287,14 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
       // outputs
       map<string, StmtSchedule> schedules;
 
+      bool is_write(const std::string& pt) const {
+        return contains_key(pt, write_ports);
+      }
+
+      bool is_read(const std::string& pt) const {
+        return contains_key(pt, read_ports);
+      }
+
       set<string> port_names() const {
         auto names = domain(write_ports);
         for (auto n : domain(read_ports)) {
@@ -579,10 +587,29 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
           sort(begin(port_list), end(port_list), [buffer](const std::string& pta, const std::string& ptb) {
               return buffer.lt(buffer.schedule(pta).back(), buffer.schedule(ptb).back());
           });
-          for (auto p : port_list) {
-            cout << "\t" << p << ": " << buffer.schedule(p) << endl;
+
+          string last_pt = port_list[0];
+          internal_assert(buffer.is_write(last_pt)) << "Buffer: " << buffer.name << " is read before it is written?\n";
+
+          for (size_t i = 1; i < port_list.size(); i++) {
+            string next_pt = port_list[i];
+
+            if (buffer.is_write(next_pt)) {
+              auto last_cntrl = def->sel("self." + last_pt + "_" + (buffer.is_write(last_pt) ? "en" : "valid"));
+              auto last_data = def->sel("self." + last_pt);
+
+              auto next_cntrl = def->sel("self." + next_pt + "_" + (buffer.is_write(next_pt) ? "en" : "valid"));
+              auto next_data = def->sel("self." + next_pt);
+
+              def->connect(last_cntrl, next_cntrl);
+              def->connect(last_data, next_data);
+            }
+
+            last_pt = next_pt;
           }
-          internal_assert(false) << "All reads and writes to " << buffer.name << " at: " << buffer.write_loop_levels()[0] << "\n";
+          return;
+        } else {
+          internal_assert(false) << "Two separate read / write levels for: " << buffer.name << "\n";
         }
       }
     }
@@ -646,7 +673,7 @@ std::ostream& operator<<(std::ostream& out, const StmtSchedule& s) {
         cout << "\t\tWrites..." << endl;
         for (auto rd : buf.write_ports) {
           cout << "\t\t\t" << rd.first << " : " << buf.port_schedule(rd.first) << buf.port_address_stream(rd.first) << endl;
-          ubuffer_fields.push_back({rd.first + "_en", context->Bit()});
+          ubuffer_fields.push_back({rd.first + "_en", context->BitIn()});
           ubuffer_fields.push_back({rd.first, context->BitIn()->Arr(16)});
         }
 
