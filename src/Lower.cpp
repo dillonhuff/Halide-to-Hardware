@@ -198,7 +198,7 @@ Module lower(const vector<Function> &output_funcs, const string &pipeline_name, 
     s = allocation_bounds_inference(s, env, func_bounds);
     debug(2) << "Lowering after allocation bounds inference:\n" << s << '\n';
 
-    streaming_codegen(s);
+    streaming_codegen(s, env);
 
     //std::cout << "doing sliding window lowering pass\n";
     Stmt s_sliding;

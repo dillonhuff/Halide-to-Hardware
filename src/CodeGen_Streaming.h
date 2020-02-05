@@ -10,7 +10,7 @@
 namespace Halide {
 namespace Internal {
 
-  void streaming_codegen(Stmt& stmt);
+  void streaming_codegen(Stmt& stmt, const std::map<std::string, Function>& env);
 
 }
 }
