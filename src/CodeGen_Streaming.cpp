@@ -1,6 +1,7 @@
 #include "CodeGen_Streaming.h"
 
 #include "CodeGen_C.h"
+#include "HWUtils.h"
 #include "RemoveTrivialForLoops.h"
 #include "Simplify.h"
 #include "UnrollLoops.h"
@@ -20,8 +21,8 @@ namespace Internal {
         CodeGen_C(out, t, CodeGen_C::OutputKind::CPlusPlusImplementation) {
         }
 
-      void compileStmt(Stmt& s) {
-        cout << "Compiling stmt" << endl;
+      void compileStmt(const Stmt& s) {
+        cout << "Compiling stmt: " << s << endl;
         s.accept(this);
         cout << "Done Compiling stmt" << endl;
       }
@@ -42,13 +43,13 @@ namespace Internal {
       void visit(const Call* op) override {
         do_indent();
         //op->accept(this);
-        stream << "// Call" << endl;
+        stream << "// Call: " << op->name << endl;
       }
 
       void visit(const Provide*op) override {
         do_indent();
         //op->accept(this);
-        stream << "// Provide" << endl;
+        stream << "// Provide: " << op->name << endl;
       }
   };
 
@@ -61,11 +62,16 @@ namespace Internal {
         continue;
       }
 
+      //Stmt simple = simplify(remove_trivial_for_loops(simplify(unroll_loops(simplify(rf.r->body)))));
+      Stmt simple = simplify(remove_trivial_for_loops(simplify(unroll_loops(simplify(stmt)))));
+      PCFinder rf(p.first);
+      simple.accept(&rf);
+      internal_assert(rf.r != nullptr) << "No realize for: " << p.first << " in \n " << simple << "\n";
+
       Target target;
       ofstream out(p.first + "_accel.cpp");
       CodeGen_Streaming stream_codegen(out, target);
-      Stmt simple = simplify(remove_trivial_for_loops(simplify(unroll_loops(simplify(stmt)))));
-      stream_codegen.compileStmt(simple);
+      stream_codegen.compileStmt(rf.r->body);
       out.close();
       //assert(false);
     }

@@ -570,6 +570,25 @@ public:
         return d;
       }
 
+  class PCFinder : public IRGraphVisitor {
+    public:
+
+      using IRGraphVisitor::visit;
+
+      const ProducerConsumer* r;
+      string target;
+
+      PCFinder(const std::string& target_) : r(nullptr), target(target_) {}
+
+      void visit(const ProducerConsumer* rl) override {
+        if (rl->is_producer && rl->name == target) {
+          r = rl;
+        } else {
+          rl->body->accept(this);
+        }
+      }
+  };
+
   class RealizeFinder : public IRGraphVisitor {
     public:
 

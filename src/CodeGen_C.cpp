@@ -1717,6 +1717,7 @@ void CodeGen_C::compile(const Buffer<> &buffer) {
 string CodeGen_C::print_expr(Expr e) {
     id = "$$ BAD ID $$";
     e.accept(this);
+    //internal_assert(id != "$$ BAD ID $$") << "Bad id for expr: " << e << "\n";
     return id;
 }
 
