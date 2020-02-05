@@ -408,6 +408,7 @@ SOURCE_FILES = \
   CodeGen_Posix.cpp \
   CodeGen_PowerPC.cpp \
   CodeGen_PTX_Dev.cpp \
+  CodeGen_Streaming.cpp \
   CodeGen_VHLS_Base.cpp \
   CodeGen_VHLS_Target.cpp \
   CodeGen_VHLS_Testbench.cpp \

@@ -17,6 +17,7 @@
 #include "BoundsInference.h"
 #include "CSE.h"
 #include "CanonicalizeGPUVars.h"
+#include "CodeGen_Streaming.h"
 #include "Debug.h"
 #include "DebugArguments.h"
 #include "DebugToFile.h"
@@ -196,6 +197,8 @@ Module lower(const vector<Function> &output_funcs, const string &pipeline_name, 
     debug(1) << "Performing allocation bounds inference...\n";
     s = allocation_bounds_inference(s, env, func_bounds);
     debug(2) << "Lowering after allocation bounds inference:\n" << s << '\n';
+
+    streaming_codegen(s);
 
     //std::cout << "doing sliding window lowering pass\n";
     Stmt s_sliding;
