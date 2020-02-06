@@ -38,6 +38,8 @@ namespace Internal {
         }
 
       void compileStmt(const std::string& name, const Stmt& s) {
+        cout << "Generating code for: " << s << endl;
+
         FuncOpCollector collector;
         s.accept(&collector);
         vector<string> arg_strings;
@@ -72,7 +74,9 @@ namespace Internal {
       }
 
       void visit(const Call* op) override {
-        if (op->call_type == Call::CallType::Image ||
+        if (op->is_intrinsic(Call::likely_if_innermost)) {
+          op->args[0].accept(this);
+        } else if (op->call_type == Call::CallType::Image ||
             op->call_type == Call::CallType::Halide) {
           vector<string> args;
           ostringstream rhs;
