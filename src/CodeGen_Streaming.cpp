@@ -14,21 +14,25 @@ using namespace std;
 namespace Halide {
 namespace Internal {
 
-  std::string comma_list(const std::vector<string>& strs) {
+  std::string sep_list(const std::vector<string>& strs,
+      const string& ld, const string& rd, const string& mid) {
     if (strs.size() == 0) {
-      return "";
+      return ld + rd;
     }
 
-    string s = "";
+    string s = ld;
     for (size_t i = 0; i < strs.size(); i++) {
       s += strs.at(i);
       if (i < strs.size() - 1) {
-        s += ", ";
+        s += mid;
       }
     }
-    return s;
+    return s + rd;
   }
 
+  std::string comma_list(const std::vector<string>& strs) {
+    return sep_list(strs, "", "", ", ");
+  }
   class CodeGen_Streaming : public CodeGen_C {
     public:
 
@@ -55,19 +59,23 @@ namespace Internal {
           auto b = bn.second;
           if (b.write_loop_levels().size() == 0 ||
               b.read_loop_levels().size() == 0) {
-            arg_strings.push_back("hwbuffer& " + print_name(b.name));
+            arg_strings.push_back("hw_stream<int > & " + print_name(b.name));
           } else {
-            local_buf_strings.push_back("hwbuffer " + print_name(b.name));
             Box bt = box_touched(s, b.name);
+            vector<string> bnd_strings;
+            for (auto i : bt.bounds) {
+              ostringstream oss;
+              oss << "(" << i.max << " - " << i.min << " + 1)";
+              bnd_strings.push_back(oss.str());
+            }
+            string size = sep_list(bnd_strings, "(", ")", "*");
+            local_buf_strings.push_back("hwbuffer<int, " + size +" >" + print_name(b.name));
             stream << "// Box of " << b.name << " touched: " << bt << endl;
           }
         }
 
-        //stream << "Bounds:" << endl;
-        //for (auto b : bounds) {
-          //stream << "\tBound: " << b.first.first << "[" << b.first.second << "] = " << b.second.min << " to " << b.second.max << endl;
-        //}
-        stream << "class hwbuffer { public: int read() { return 0; } void write(const int value) { } };" << endl << endl;
+        stream << "template<typename T> class hwstream { public: T read() { return 0; } void write(const T& value) { } };" << endl << endl;
+        stream << "template<typename T, int capacity> class hwbuffer { public: T read() { return 0; } void write(const T& value) { } };" << endl << endl;
         //do_indent();
         stream << "void " << name << "(" << comma_list(arg_strings) << ") {" << endl;
         for (auto s : local_buf_strings) {
