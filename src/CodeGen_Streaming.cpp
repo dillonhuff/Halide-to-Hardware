@@ -36,6 +36,8 @@ namespace Internal {
   class CodeGen_Streaming : public CodeGen_C {
     public:
 
+      set<string> external_buffers;
+
       CodeGen_Streaming(std::ostream& out,
           Target& t) :
         CodeGen_C(out, t, CodeGen_C::OutputKind::CPlusPlusImplementation) {
@@ -43,6 +45,10 @@ namespace Internal {
 
       string sanitize_c(const string& n) {
         return print_name(n);
+      }
+
+      bool external_buffer(const std::string& n) {
+        return elem(n, external_buffers);
       }
 
       void compileStmt(const std::string& n, const Stmt& s,
@@ -60,6 +66,7 @@ namespace Internal {
           if (b.write_loop_levels().size() == 0 ||
               b.read_loop_levels().size() == 0) {
             arg_strings.push_back("hw_stream<int > & " + print_name(b.name));
+            external_buffers.insert(b.name);
           } else {
             Box bt = box_touched(s, b.name);
             vector<string> bnd_strings;
@@ -74,14 +81,24 @@ namespace Internal {
           }
         }
 
-        stream << "template<typename T> class hw_stream { public: T read() { return 0; } void write(const T& value) { } };" << endl << endl;
         stream << "template<typename T, ";
         vector<string> dim_strings;
         for (int i = 0; i < 5; i++) {
           dim_strings.push_back("int extent_" + to_string(i) + " = 1");
         }
         stream << comma_list(dim_strings) << "> ";
-        stream << "class hwbuffer { public: T read() { return 0; } void write(const T& value) { } };" << endl << endl;
+        stream << "class hwbuffer {" << endl;
+        stream << "\tpublic:" << endl;
+        stream << "\tT buf[extent_0*extent_1*extent_2*extent_3*extent_4];" << endl;
+        stream << "\tT read(const int e0=0, const int e1=0, const int e2=0, const int e3=0, const int e4=0) { return buf[e0*extent_0]; }" << endl;
+        stream << "\tvoid write(const T& value, const int e0=0, const int e1=0, const int e2=0, const int e3=0, const int e4=0) { }" << endl;
+        stream << "};" << endl << endl;
+
+        stream << "template<typename T> class hw_stream { public:" << endl;
+        stream << "\tT read() { return 0; }" << endl;
+        stream << "\tvoid write(const T& value) { }" << endl;
+        stream << "};" << endl << endl;
+
         //do_indent();
         stream << "void " << name << "(" << comma_list(arg_strings) << ") {" << endl;
         for (auto s : local_buf_strings) {
@@ -107,7 +124,14 @@ namespace Internal {
             op->call_type == Call::CallType::Halide) {
           vector<string> args;
           ostringstream rhs;
-          rhs << print_name(op->name) << ".read()";
+          vector<string> vs;
+          if (!external_buffer(op->name)) {
+            for (auto a : op->args) {
+              string v = print_expr(a);
+              vs.push_back(v);
+            }
+          }
+          rhs << print_name(op->name) << ".read(" << comma_list(vs) << ")";
           print_assignment(op->type, rhs.str());
         } else {
           CodeGen_C::visit(op);
@@ -118,9 +142,16 @@ namespace Internal {
         internal_assert(op->values.size() == 1);
         do_indent();
         string val = print_expr(op->values[0]);
+        vector<string> vs{val};
+        if (!external_buffer(op->name)) {
+          for (auto a : op->args) {
+            string v = print_expr(a);
+            vs.push_back(v);
+          }
+        }
         //string vs = print_assignment(op->values[0].type(), val);
         do_indent();
-        stream << print_name(op->name) << ".write(" << val << ");" << endl;
+        stream << print_name(op->name) << ".write(" << comma_list(vs) << ");" << endl;
         cache.clear();
       }
   };
