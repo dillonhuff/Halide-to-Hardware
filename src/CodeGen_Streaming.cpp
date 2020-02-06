@@ -37,7 +37,12 @@ namespace Internal {
         CodeGen_C(out, t, CodeGen_C::OutputKind::CPlusPlusImplementation) {
         }
 
-      void compileStmt(const std::string& name, const Stmt& s) {
+      string sanitize_c(const string& n) {
+        return print_name(n);
+      }
+
+      void compileStmt(const std::string& n, const Stmt& s) {
+        string name = n;
         cout << "Generating code for: " << s << endl;
 
         FuncOpCollector collector;
@@ -91,8 +96,10 @@ namespace Internal {
         internal_assert(op->values.size() == 1);
         do_indent();
         string val = print_expr(op->values[0]);
+        //string vs = print_assignment(op->values[0].type(), val);
         do_indent();
         stream << print_name(op->name) << ".write(" << val << ");" << endl;
+        cache.clear();
       }
   };
 
@@ -113,7 +120,7 @@ namespace Internal {
       Target target;
       ofstream out(p.first + "_accel.cpp");
       CodeGen_Streaming stream_codegen(out, target);
-      stream_codegen.compileStmt(p.first, rf.r->body);
+      stream_codegen.compileStmt(stream_codegen.sanitize_c(p.first), rf.r->body);
       out.close();
     }
   }
