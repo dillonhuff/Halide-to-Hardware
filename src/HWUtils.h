@@ -667,7 +667,8 @@ std::string exprString(const Expr e);
 
   class MemoryConstraints {
     public:
-      HWBuffer ubuf;
+      string ubufname;
+      //HWBuffer ubuf;
       string name;
       map<string, const Provide*> write_ports;
       map<string, const Call*> read_ports;

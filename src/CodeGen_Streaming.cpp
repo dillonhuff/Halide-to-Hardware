@@ -40,8 +40,26 @@ namespace Internal {
       void compileStmt(const std::string& name, const Stmt& s) {
         FuncOpCollector collector;
         s.accept(&collector);
+        vector<string> arg_strings;
+        vector<string> local_buf_strings;
+        for (auto bn : collector.hwbuffers()) {
+          auto b = bn.second;
+          if (b.write_loop_levels().size() == 0 ||
+              b.read_loop_levels().size() == 0) {
+            arg_strings.push_back("hwbuffer& " + print_name(b.name));
+          } else {
+            local_buf_strings.push_back("hwbuffer " + print_name(b.name));
+          }
+        }
+
+        stream << "class hwbuffer { public: int read() { return 0; } void write(const int value) { } };" << endl << endl;
         //do_indent();
-        stream << "void " << name << "() {" << endl;
+        stream << "void " << name << "(" << comma_list(arg_strings) << ") {" << endl;
+        for (auto s : local_buf_strings) {
+          do_indent();
+          stream << s << ";" << endl;
+        }
+        stream << endl << endl;
         cout << "Compiling stmt: " << s << endl;
         s.accept(this);
         cout << "Done Compiling stmt" << endl;
@@ -57,13 +75,7 @@ namespace Internal {
         if (op->call_type == Call::CallType::Image ||
             op->call_type == Call::CallType::Halide) {
           vector<string> args;
-          //for (auto a : op->args) {
-            //do_indent();
-            //string arg = print_expr(a);
-            //args.push_back(arg);
-          //}
           ostringstream rhs;
-          //rhs << print_name(op->name) << "(" << comma_list(args) << ")";
           rhs << print_name(op->name) << ".read()";
           print_assignment(op->type, rhs.str());
         } else {

@@ -244,67 +244,67 @@ namespace Halide {
 
 map<string, CoreIR::Module*>
 synthesize_hwbuffers(const Stmt& stmt, const std::map<std::string, Function>& env, std::vector<HWXcel>& xcels) {
-  Stmt simple = simplify(remove_trivial_for_loops(simplify(unroll_loops(simplify(stmt)))));
+  //Stmt simple = simplify(remove_trivial_for_loops(simplify(unroll_loops(simplify(stmt)))));
 
-  cout << "Doing rewrites for" << endl;
-  cout << simple << endl;
+  //cout << "Doing rewrites for" << endl;
+  //cout << simple << endl;
 
-  FuncOpCollector mic;
-  simple.accept(&mic);
-  auto buffers = mic.hwbuffers();
+  //FuncOpCollector mic;
+  //simple.accept(&mic);
+  //auto buffers = mic.hwbuffers();
 
-  CoreIR::Context* context = newContext();
-  CoreIRLoadLibrary_commonlib(context);
-  auto ns = context->getNamespace("global");
+  //CoreIR::Context* context = newContext();
+  //CoreIRLoadLibrary_commonlib(context);
+  //auto ns = context->getNamespace("global");
 
-  for (auto f : env) {
-    if (f.second.schedule().is_accelerated() ||
-        f.second.schedule().is_accelerator_input()) {
-        //f.second.schedule().is_accelerator_input() ||
-        //f.second.schedule().is_hw_kernel()) {
+  //for (auto f : env) {
+    //if (f.second.schedule().is_accelerated() ||
+        //f.second.schedule().is_accelerator_input()) {
+        ////f.second.schedule().is_accelerator_input() ||
+        ////f.second.schedule().is_hw_kernel()) {
 
-      cout << "Buffer for " << f.first << endl;
-      internal_assert(contains_key(f.first, buffers)) << f.first << " was not found in memory analysis\n";
-      MemoryConstraints buf = map_find(f.first, buffers);
-      // Add hwbuffer field to memory constraints wrapper
-      for (auto xcel : xcels) {
-        for (auto buffer : xcel.hwbuffers) {
-          if (buffer.first == buf.name) {
-            buf.ubuf = buffer.second;
-          }
-        }
-      }
-      vector<pair<string, CoreIR::Type*> > ubuffer_fields{{"clk", context->Named("coreir.clkIn")}, {"reset", context->BitIn()}};
-      cout << "\t\tReads..." << endl;
-      for (auto rd : buf.read_ports) {
-        cout << "\t\t\t" << rd.first << " : " << buf.port_schedule(rd.first) << " " << buf.port_address_stream(rd.first) << endl;
-        ubuffer_fields.push_back({rd.first + "_valid", context->Bit()});
-        ubuffer_fields.push_back({rd.first, context->Bit()->Arr(16)});
-      }
-      cout << "\t\tWrites..." << endl;
-      for (auto rd : buf.write_ports) {
-        cout << "\t\t\t" << rd.first << " : " << buf.port_schedule(rd.first) << buf.port_address_stream(rd.first) << endl;
-        ubuffer_fields.push_back({rd.first + "_en", context->BitIn()});
-        ubuffer_fields.push_back({rd.first, context->BitIn()->Arr(16)});
-      }
+      //cout << "Buffer for " << f.first << endl;
+      //internal_assert(contains_key(f.first, buffers)) << f.first << " was not found in memory analysis\n";
+      //MemoryConstraints buf = map_find(f.first, buffers);
+      //// Add hwbuffer field to memory constraints wrapper
+      //for (auto xcel : xcels) {
+        //for (auto buffer : xcel.hwbuffers) {
+          //if (buffer.first == buf.name) {
+            //buf.ubuf = buffer.second;
+          //}
+        //}
+      //}
+      //vector<pair<string, CoreIR::Type*> > ubuffer_fields{{"clk", context->Named("coreir.clkIn")}, {"reset", context->BitIn()}};
+      //cout << "\t\tReads..." << endl;
+      //for (auto rd : buf.read_ports) {
+        //cout << "\t\t\t" << rd.first << " : " << buf.port_schedule(rd.first) << " " << buf.port_address_stream(rd.first) << endl;
+        //ubuffer_fields.push_back({rd.first + "_valid", context->Bit()});
+        //ubuffer_fields.push_back({rd.first, context->Bit()->Arr(16)});
+      //}
+      //cout << "\t\tWrites..." << endl;
+      //for (auto rd : buf.write_ports) {
+        //cout << "\t\t\t" << rd.first << " : " << buf.port_schedule(rd.first) << buf.port_address_stream(rd.first) << endl;
+        //ubuffer_fields.push_back({rd.first + "_en", context->BitIn()});
+        //ubuffer_fields.push_back({rd.first, context->BitIn()->Arr(16)});
+      //}
 
-      RecordType* utp = context->Record(ubuffer_fields);
-      auto ub = ns->newModuleDecl(f.first + "_ubuffer", utp);
-      auto def = ub->newModuleDef();
-      synthesize_ubuffer(def, buf);
-      ub->setDef(def);
-    } else {
-      cout << f.first << " is not accelerated" << endl;
-      //internal_assert(!f.second.schedule().is_hw_kernel());
-    }
-  }
+      //RecordType* utp = context->Record(ubuffer_fields);
+      //auto ub = ns->newModuleDecl(f.first + "_ubuffer", utp);
+      //auto def = ub->newModuleDef();
+      //synthesize_ubuffer(def, buf);
+      //ub->setDef(def);
+    //} else {
+      //cout << f.first << " is not accelerated" << endl;
+      ////internal_assert(!f.second.schedule().is_hw_kernel());
+    //}
+  //}
 
-  // Save ubuffers and finish
-  if (!saveToFile(ns, "ubuffers.json")) {
-    cout << "Could not save ubuffers" << endl;
-    context->die();
-  }
-  deleteContext(context);
+  //// Save ubuffers and finish
+  //if (!saveToFile(ns, "ubuffers.json")) {
+    //cout << "Could not save ubuffers" << endl;
+    //context->die();
+  //}
+  //deleteContext(context);
 
   return {};
 
