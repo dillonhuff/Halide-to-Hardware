@@ -4,13 +4,16 @@
 #include <sstream>
 
 #include "IRVisitor.h"
+#include "Interval.h"
 #include "Module.h"
 #include "Scope.h"
 
 namespace Halide {
 namespace Internal {
 
-  void streaming_codegen(Stmt& stmt, const std::map<std::string, Function>& env);
+  void streaming_codegen(Stmt& stmt,
+      const std::map<std::string, Function>& env,
+      const std::map<std::pair<std::string, int>, Interval>& bounds);
 
 }
 }

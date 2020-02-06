@@ -224,7 +224,7 @@ Module lower(const vector<Function> &output_funcs, const string &pipeline_name, 
     s = uniquify_variable_names(s);
     debug(2) << "Lowering after uniquifying variable names:\n" << s << "\n\n";
 
-    streaming_codegen(s, env);
+    streaming_codegen(s, env, func_bounds);
     if (t.has_feature(Target::CoreIR)) {
       vector<HWXcel> buf_xcels =
         extract_hw_accelerators(s, env, inlined_stages);

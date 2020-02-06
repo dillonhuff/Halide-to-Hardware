@@ -41,7 +41,9 @@ namespace Internal {
         return print_name(n);
       }
 
-      void compileStmt(const std::string& n, const Stmt& s) {
+      void compileStmt(const std::string& n, const Stmt& s,
+          const map<pair<string, int>, Interval>& bounds) {
+
         string name = n;
         cout << "Generating code for: " << s << endl;
 
@@ -56,9 +58,15 @@ namespace Internal {
             arg_strings.push_back("hwbuffer& " + print_name(b.name));
           } else {
             local_buf_strings.push_back("hwbuffer " + print_name(b.name));
+            Box bt = box_touched(s, b.name);
+            stream << "// Box of " << b.name << " touched: " << bt << endl;
           }
         }
 
+        //stream << "Bounds:" << endl;
+        //for (auto b : bounds) {
+          //stream << "\tBound: " << b.first.first << "[" << b.first.second << "] = " << b.second.min << " to " << b.second.max << endl;
+        //}
         stream << "class hwbuffer { public: int read() { return 0; } void write(const int value) { } };" << endl << endl;
         //do_indent();
         stream << "void " << name << "(" << comma_list(arg_strings) << ") {" << endl;
@@ -104,7 +112,8 @@ namespace Internal {
   };
 
   void streaming_codegen(Stmt& stmt, 
-      const map<string, Function>& env) {
+      const map<string, Function>& env,
+      const map<pair<string, int>, Interval>& bounds) {
 
     for (const auto &p : env) {
       Function func = p.second;
@@ -120,7 +129,7 @@ namespace Internal {
       Target target;
       ofstream out(p.first + "_accel.cpp");
       CodeGen_Streaming stream_codegen(out, target);
-      stream_codegen.compileStmt(stream_codegen.sanitize_c(p.first), rf.r->body);
+      stream_codegen.compileStmt(stream_codegen.sanitize_c(p.first), rf.r->body, bounds);
       out.close();
     }
   }
