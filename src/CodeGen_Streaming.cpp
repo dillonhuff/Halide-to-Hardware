@@ -38,6 +38,8 @@ namespace Internal {
         }
 
       void compileStmt(const std::string& name, const Stmt& s) {
+        FuncOpCollector collector;
+        s.accept(&collector);
         //do_indent();
         stream << "void " << name << "() {" << endl;
         cout << "Compiling stmt: " << s << endl;
@@ -87,7 +89,6 @@ namespace Internal {
         continue;
       }
 
-      //Stmt simple = simplify(remove_trivial_for_loops(simplify(unroll_loops(simplify(rf.r->body)))));
       Stmt simple = simplify(remove_trivial_for_loops(simplify(unroll_loops(simplify(stmt)))));
       PCFinder rf(p.first);
       simple.accept(&rf);
@@ -98,7 +99,6 @@ namespace Internal {
       CodeGen_Streaming stream_codegen(out, target);
       stream_codegen.compileStmt(p.first, rf.r->body);
       out.close();
-      //assert(false);
     }
   }
 
