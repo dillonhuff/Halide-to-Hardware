@@ -90,7 +90,7 @@ namespace Internal {
         stream << "class hwbuffer {" << endl;
         stream << "\tpublic:" << endl;
         stream << "\tT buf[extent_0*extent_1*extent_2*extent_3*extent_4];" << endl;
-        stream << "\tT read(const int e0=0, const int e1=0, const int e2=0, const int e3=0, const int e4=0) { return buf[e0*extent_0]; }" << endl;
+        stream << "\tT read(const int e0=0, const int e1=0, const int e2=0, const int e3=0, const int e4=0) { return buf[e0*extent_0 + e1*extent_0*extent_1 + e2*extent_0*extent_1*extent_2 + e3*extent_0*extent_1*extent_2*extent_3 + e4*extent_0*extent_1*extent_2*extent_3*extent_4]; }" << endl;
         stream << "\tvoid write(const T& value, const int e0=0, const int e1=0, const int e2=0, const int e3=0, const int e4=0) { }" << endl;
         stream << "};" << endl << endl;
 
