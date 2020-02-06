@@ -68,14 +68,20 @@ namespace Internal {
               oss << "(" << i.max << " - " << i.min << " + 1)";
               bnd_strings.push_back(oss.str());
             }
-            string size = sep_list(bnd_strings, "(", ")", "*");
+            string size = comma_list(bnd_strings);
             local_buf_strings.push_back("hwbuffer<int, " + size +" >" + print_name(b.name));
             stream << "// Box of " << b.name << " touched: " << bt << endl;
           }
         }
 
-        stream << "template<typename T> class hwstream { public: T read() { return 0; } void write(const T& value) { } };" << endl << endl;
-        stream << "template<typename T, int capacity> class hwbuffer { public: T read() { return 0; } void write(const T& value) { } };" << endl << endl;
+        stream << "template<typename T> class hw_stream { public: T read() { return 0; } void write(const T& value) { } };" << endl << endl;
+        stream << "template<typename T, ";
+        vector<string> dim_strings;
+        for (int i = 0; i < 5; i++) {
+          dim_strings.push_back("int extent_" + to_string(i) + " = 1");
+        }
+        stream << comma_list(dim_strings) << "> ";
+        stream << "class hwbuffer { public: T read() { return 0; } void write(const T& value) { } };" << endl << endl;
         //do_indent();
         stream << "void " << name << "(" << comma_list(arg_strings) << ") {" << endl;
         for (auto s : local_buf_strings) {
