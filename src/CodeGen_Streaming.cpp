@@ -63,12 +63,13 @@ namespace Internal {
         vector<string> local_buf_strings;
         for (auto bn : collector.hwbuffers()) {
           auto b = bn.second;
+          Box bt = box_touched(s, b.name);
+          stream << "// Box of " << b.name << " touched: " << bt << endl;
           if (b.write_loop_levels().size() == 0 ||
               b.read_loop_levels().size() == 0) {
             arg_strings.push_back("hw_stream<int > & " + print_name(b.name));
             external_buffers.insert(b.name);
           } else {
-            Box bt = box_touched(s, b.name);
             vector<string> bnd_strings;
             for (auto i : bt.bounds) {
               ostringstream oss;
@@ -77,10 +78,10 @@ namespace Internal {
             }
             string size = comma_list(bnd_strings);
             local_buf_strings.push_back("hwbuffer<int, " + size +" >" + print_name(b.name));
-            stream << "// Box of " << b.name << " touched: " << bt << endl;
           }
         }
 
+        stream << "#include <deque>" << endl << endl;
         stream << "template<typename T, ";
         vector<string> dim_strings;
         for (int i = 0; i < 5; i++) {
@@ -91,12 +92,14 @@ namespace Internal {
         stream << "\tpublic:" << endl;
         stream << "\tT buf[extent_0*extent_1*extent_2*extent_3*extent_4];" << endl;
         stream << "\tT read(const int e0=0, const int e1=0, const int e2=0, const int e3=0, const int e4=0) { return buf[e0*extent_0 + e1*extent_0*extent_1 + e2*extent_0*extent_1*extent_2 + e3*extent_0*extent_1*extent_2*extent_3 + e4*extent_0*extent_1*extent_2*extent_3*extent_4]; }" << endl;
-        stream << "\tvoid write(const T& value, const int e0=0, const int e1=0, const int e2=0, const int e3=0, const int e4=0) { }" << endl;
+        stream << "\tvoid write(const T& value, const int e0=0, const int e1=0, const int e2=0, const int e3=0, const int e4=0) {" << endl;
+        stream << "\t\tbuf[e0*extent_0 + e1*extent_0*extent_1 + e2*extent_0*extent_1*extent_2 + e3*extent_0*extent_1*extent_2*extent_3 + e4*extent_0*extent_1*extent_2*extent_3*extent_4] = value; }" << endl;
         stream << "};" << endl << endl;
 
         stream << "template<typename T> class hw_stream { public:" << endl;
-        stream << "\tT read() { return 0; }" << endl;
-        stream << "\tvoid write(const T& value) { }" << endl;
+        stream << "\tstd::deque<T> values;" << endl;
+        stream << "\tT read() { T v = values.back(); values.pop_back(); return v; }" << endl;
+        stream << "\tvoid write(const T& value) { values.push_front(value); }" << endl;
         stream << "};" << endl << endl;
 
         //do_indent();

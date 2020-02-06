@@ -2291,17 +2291,23 @@ halide_buffer_t *_halide_buffer_set_bounds(halide_buffer_t *buf,
 #define HALIDE_FUNCTION_ATTRS
 #endif
 // Box of conv touched: {[0, 1], [0, 1]}
+// Box of hw_input touched: {[0, 3], [0, 3]}
+// Box of hw_output touched: {[0, ((2 + 0) - 1)], [0, ((2 + 0) - 1)]}
 // Box of kernel touched: {[0, 2], [0, 2]}
+#include <deque>
+
 template<typename T, int extent_0 = 1, int extent_1 = 1, int extent_2 = 1, int extent_3 = 1, int extent_4 = 1> class hwbuffer {
 	public:
 	T buf[extent_0*extent_1*extent_2*extent_3*extent_4];
 	T read(const int e0=0, const int e1=0, const int e2=0, const int e3=0, const int e4=0) { return buf[e0*extent_0 + e1*extent_0*extent_1 + e2*extent_0*extent_1*extent_2 + e3*extent_0*extent_1*extent_2*extent_3 + e4*extent_0*extent_1*extent_2*extent_3*extent_4]; }
-	void write(const T& value, const int e0=0, const int e1=0, const int e2=0, const int e3=0, const int e4=0) { }
+	void write(const T& value, const int e0=0, const int e1=0, const int e2=0, const int e3=0, const int e4=0) {
+		buf[e0*extent_0 + e1*extent_0*extent_1 + e2*extent_0*extent_1*extent_2 + e3*extent_0*extent_1*extent_2*extent_3 + e4*extent_0*extent_1*extent_2*extent_3*extent_4] = value; }
 };
 
 template<typename T> class hw_stream { public:
-	T read() { return 0; }
-	void write(const T& value) { }
+	std::deque<T> values;
+	T read() { T v = values.back(); values.pop_back(); return v; }
+	void write(const T& value) { values.push_front(value); }
 };
 
 void _hw_output(hw_stream<int > & _hw_input, hw_stream<int > & _hw_output) {
