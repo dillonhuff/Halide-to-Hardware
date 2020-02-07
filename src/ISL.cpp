@@ -8,9 +8,11 @@
 #include <map>
 #include <vector>
 
-#include "algorithm.h"
+//#include "algorithm.h"
 
-using namespace dbhc;
+#include "HWUtils.h"
+
+//using namespace dbhc;
 using namespace std;
 
 namespace Halide {
@@ -1598,576 +1600,576 @@ isl_union_pw_qpolynomial_fold* upper_bound(isl_union_pw_qpolynomial* range_card)
   //generate_hls_code(buf);
 //}
 
-//string c_sanitize(const std::string& str) {
-  //string res = "";
-  //for (auto c : str) {
-    //if (c == '+') {
-      //res += "_p_";
-    //} else if (c == ')') {
-      //res += "_rp_";
-    //} else if (c == '(') {
-      //res += "_lp_";
-    //} else if (c == '*') {
-      //res += "_m_";
-    //} else if (c == ' ') {
-      //res += "_";
-    //} else if (c == ',') {
-      //res += "_c_";
-    //} else {
-      //res += c;
-    //}
-  //}
-  //return res;
-//}
+string c_sanitize(const std::string& str) {
+  string res = "";
+  for (auto c : str) {
+    if (c == '+') {
+      res += "_p_";
+    } else if (c == ')') {
+      res += "_rp_";
+    } else if (c == '(') {
+      res += "_lp_";
+    } else if (c == '*') {
+      res += "_m_";
+    } else if (c == ' ') {
+      res += "_";
+    } else if (c == ',') {
+      res += "_c_";
+    } else {
+      res += c;
+    }
+  }
+  return res;
+}
 
-//struct op {
+struct op {
 
-  //op* parent;
-  //bool is_loop;
-  //int start;
-  //int end_exclusive;
-  //std::string name;
-  //std::vector<op*> children;
-  //std::set<std::string> produces;
-  //std::set<pair<std::string, std::string> > produce_locs;
+  op* parent;
+  bool is_loop;
+  int start;
+  int end_exclusive;
+  std::string name;
+  std::vector<op*> children;
+  std::set<std::string> produces;
+  std::set<pair<std::string, std::string> > produce_locs;
 
-  //std::set<std::string> consumes;
-  //std::set<pair<std::string, std::string> > consume_locs;
-  //map<pair<string, string>, string> consumed_value_names;
-  //std::string func;
-  //vector<string> func_args;
+  std::set<std::string> consumes;
+  std::set<pair<std::string, std::string> > consume_locs;
+  map<pair<string, string>, string> consumed_value_names;
+  std::string func;
+  vector<string> func_args;
 
-  //isl_ctx* ctx;
+  isl_ctx* ctx;
 
-  //op() : parent(nullptr), is_loop(false) {}
+  op() : parent(nullptr), is_loop(false) {}
 
-  //string consumed_value_name(pair<string, string>& val_loc) {
-    //if (contains_key(val_loc, consumed_value_names)) {
-      //return map_find(val_loc, consumed_value_names);
-    //}
-    //return val_loc.first + "_value";
-  //}
+  string consumed_value_name(pair<string, string>& val_loc) {
+    if (contains_key(val_loc, consumed_value_names)) {
+      return map_find(val_loc, consumed_value_names);
+    }
+    return val_loc.first + "_value";
+  }
 
-  //void add_function(const std::string& n) {
-    //func = n;
-  //}
+  void add_function(const std::string& n) {
+    func = n;
+  }
 
-  //void add_function(const std::string& n, const vector<string>& args) {
-    //func = n;
-    //func_args = args;
-  //}
+  void add_function(const std::string& n, const vector<string>& args) {
+    func = n;
+    func_args = args;
+  }
 
-  //op* add_nest(
-      //const std::string& x, int x_min, int x_max) {
-    //auto xl = this->add_loop(x, x_min, x_max);
-    //return xl;
-  //}
+  op* add_nest(
+      const std::string& x, int x_min, int x_max) {
+    auto xl = this->add_loop(x, x_min, x_max);
+    return xl;
+  }
 
-  //op* add_nest(
-      //const std::string& x, int x_min, int x_max,
-      //const std::string& y, int y_min, int y_max) {
-    //auto xl = this->add_loop(x, x_min, x_max);
-    //auto yl = xl->add_loop(y, y_min, y_max);
-    //return yl;
-  //}
+  op* add_nest(
+      const std::string& x, int x_min, int x_max,
+      const std::string& y, int y_min, int y_max) {
+    auto xl = this->add_loop(x, x_min, x_max);
+    auto yl = xl->add_loop(y, y_min, y_max);
+    return yl;
+  }
 
-  //op* add_nest(
-      //const std::string& x, int x_min, int x_max,
-      //const std::string& y, int y_min, int y_max,
-      //const std::string& c, int c_min, int c_max) {
-    //auto xl = this->add_loop(x, x_min, x_max);
-    //auto yl = xl->add_loop(y, y_min, y_max);
-    //auto cl = yl->add_loop(c, c_min, c_max);
-    //return cl;
-  //}
+  op* add_nest(
+      const std::string& x, int x_min, int x_max,
+      const std::string& y, int y_min, int y_max,
+      const std::string& c, int c_min, int c_max) {
+    auto xl = this->add_loop(x, x_min, x_max);
+    auto yl = xl->add_loop(y, y_min, y_max);
+    auto cl = yl->add_loop(c, c_min, c_max);
+    return cl;
+  }
 
-  //op* add_loop(const std::string& name, const int l, const int u) {
-    //assert(is_loop);
+  op* add_loop(const std::string& name, const int l, const int u) {
+    assert(is_loop);
 
-    //auto lp = new op();
-    //lp->name = name;
-    //lp->ctx = ctx;
-    //lp->parent = this ;
-    //lp->is_loop = true;
-    //lp->start = l;
-    //lp->end_exclusive = u;
-    //children.push_back(lp);
+    auto lp = new op();
+    lp->name = name;
+    lp->ctx = ctx;
+    lp->parent = this ;
+    lp->is_loop = true;
+    lp->start = l;
+    lp->end_exclusive = u;
+    children.push_back(lp);
 
-    //return lp;
-  //}
+    return lp;
+  }
 
-  //op* store(const pair<string, string>& dst, const pair<string, string>& src) {
-    //auto op = add_op("store_" + dst.first + "_from_" + src.first);
-    //op->add_load(src.first, src.second);
-    //op->add_store(dst.first, dst.second);
-    //return op;
-  //}
+  op* store(const pair<string, string>& dst, const pair<string, string>& src) {
+    auto op = add_op("store_" + dst.first + "_from_" + src.first);
+    op->add_load(src.first, src.second);
+    op->add_store(dst.first, dst.second);
+    return op;
+  }
 
-  //op* add_op(const pair<string, string>& src, const std::string& func_name, const std::vector<string>& loads) {
-    //int n_ops = children.size();
-    //auto res = add_op(src.first + "_" + func_name + to_string(n_ops));
-    //assert(loads.size() % 2 == 0);
-    //vector<string> ops;
-    //for (int i = 0; i < loads.size(); i += 2) {
-      //auto r = res->add_load(loads[i], loads[i + 1]);
-      //ops.push_back(r);
-    //}
-    //assert(ops.size() == loads.size() / 2);
-    //res->add_function(func_name, ops);
-    //res->add_store(src.first, src.second);
-    //return res;
-  //}
+  op* add_op(const pair<string, string>& src, const std::string& func_name, const std::vector<string>& loads) {
+    int n_ops = children.size();
+    auto res = add_op(src.first + "_" + func_name + to_string(n_ops));
+    assert(loads.size() % 2 == 0);
+    vector<string> ops;
+    for (int i = 0; i < (int) loads.size(); i += 2) {
+      auto r = res->add_load(loads[i], loads[i + 1]);
+      ops.push_back(r);
+    }
+    assert(ops.size() == loads.size() / 2);
+    res->add_function(func_name, ops);
+    res->add_store(src.first, src.second);
+    return res;
+  }
 
-  //op* add_op(const std::string& name) {
-    //auto fo = new op();
-    //fo->name = name;
-    //fo->ctx = ctx;
-    //children.push_back(fo);
-    //return fo;
-  //}
+  op* add_op(const std::string& name) {
+    auto fo = new op();
+    fo->name = name;
+    fo->ctx = ctx;
+    children.push_back(fo);
+    return fo;
+  }
 
-  //string add_load(const std::string& b, const std::string& loc) {
-    //assert(!is_loop);
-    //consumes.insert(b + "[" + loc + "]");
-    //consume_locs.insert({b, loc});
-    //string val_name = c_sanitize(b + "_" + loc + "_value");
-    //consumed_value_names[{b, loc}] = val_name;
-    //return val_name;
-  //}
+  string add_load(const std::string& b, const std::string& loc) {
+    assert(!is_loop);
+    consumes.insert(b + "[" + loc + "]");
+    consume_locs.insert({b, loc});
+    string val_name = c_sanitize(b + "_" + loc + "_value");
+    consumed_value_names[{b, loc}] = val_name;
+    return val_name;
+  }
 
-  //void add_store(const std::string& b, const std::string& loc) {
-    //assert(!is_loop);
-    //produces.insert(b + "[" + loc + "]");
-    //produce_locs.insert({b, loc});
-  //}
+  void add_store(const std::string& b, const std::string& loc) {
+    assert(!is_loop);
+    produces.insert(b + "[" + loc + "]");
+    produce_locs.insert({b, loc});
+  }
 
-  //void add_args(const std::vector<op*>& args) {
-    //for (auto a : args) {
-      //consumes.insert(a->name);
-    //}
-  //}
+  void add_args(const std::vector<op*>& args) {
+    for (auto a : args) {
+      consumes.insert(a->name);
+    }
+  }
   
-  //void populate_iteration_domains(map<op*, vector<string> >& sched_vecs, vector<string>& active_vecs) {
-    //if (is_loop) {
-      //auto nds = active_vecs;
-      //nds.push_back(to_string(start) + " <= " + name + " < " + to_string(end_exclusive));
-      //for (auto c : children) {
-        //c->populate_iteration_domains(sched_vecs, nds);
-      //}
-    //} else {
-      //sched_vecs[this] = active_vecs;
-      //for (auto c : children) {
-        //c->populate_iteration_domains(sched_vecs, active_vecs);
-      //}
-    //}
-  //}
+  void populate_iteration_domains(map<op*, vector<string> >& sched_vecs, vector<string>& active_vecs) {
+    if (is_loop) {
+      auto nds = active_vecs;
+      nds.push_back(to_string(start) + " <= " + name + " < " + to_string(end_exclusive));
+      for (auto c : children) {
+        c->populate_iteration_domains(sched_vecs, nds);
+      }
+    } else {
+      sched_vecs[this] = active_vecs;
+      for (auto c : children) {
+        c->populate_iteration_domains(sched_vecs, active_vecs);
+      }
+    }
+  }
 
-  //void populate_schedule_vectors(map<op*, vector<string> >& sched_vecs, vector<string>& active_vecs) {
-    //if (is_loop) {
-      //auto nds = active_vecs;
-      //assert(nds.size() > 0);
+  void populate_schedule_vectors(map<op*, vector<string> >& sched_vecs, vector<string>& active_vecs) {
+    if (is_loop) {
+      auto nds = active_vecs;
+      assert(nds.size() > 0);
 
-      //nds.push_back(name);
-      //nds.push_back("0");
-      //for (auto c : children) {
-        //c->populate_schedule_vectors(sched_vecs, nds);
-        //nds[nds.size() - 1] = to_string(safe_stoi(nds[nds.size() - 1]) + 1);
-      //}
-    //} else {
-      //sched_vecs[this] = active_vecs;
-      //for (auto c : children) {
-        //c->populate_schedule_vectors(sched_vecs, active_vecs);
-      //}
-    //}
+      nds.push_back(name);
+      nds.push_back("0");
+      for (auto c : children) {
+        c->populate_schedule_vectors(sched_vecs, nds);
+        nds[nds.size() - 1] = to_string(safe_stoi(nds[nds.size() - 1]) + 1);
+      }
+    } else {
+      sched_vecs[this] = active_vecs;
+      for (auto c : children) {
+        c->populate_schedule_vectors(sched_vecs, active_vecs);
+      }
+    }
 
-    //size_t max_len = 1;
-    //for (auto& v : sched_vecs) {
-      //auto& vecs = v.second;
-      //if (vecs.size() > max_len) {
-        //max_len = vecs.size();
-      //}
-    //}
+    size_t max_len = 1;
+    for (auto& v : sched_vecs) {
+      auto& vecs = v.second;
+      if (vecs.size() > max_len) {
+        max_len = vecs.size();
+      }
+    }
 
-    //for (auto& v : sched_vecs) {
-      //size_t diff = max_len - v.second.size();
-      //for (size_t d = 0; d < diff; d++) {
-        //v.second.push_back("0");
-      //}
-    //}
-  //}
+    for (auto& v : sched_vecs) {
+      size_t diff = max_len - v.second.size();
+      for (size_t d = 0; d < diff; d++) {
+        v.second.push_back("0");
+      }
+    }
+  }
 
-  //void populate_iter_vars(map<op*, vector<string> >& varmap, vector<string>& active_vars) {
-    //if (is_loop) {
-      //auto nv = active_vars;
-      //nv.push_back(name);
-      //for (auto c : children) {
-        //c->populate_iter_vars(varmap, nv);
-      //}
-    //} else {
-      //varmap[this] = active_vars;
-      //for (auto c : children) {
-        //c->populate_iter_vars(varmap, active_vars);
-      //}
-    //}
-  //}
+  void populate_iter_vars(map<op*, vector<string> >& varmap, vector<string>& active_vars) {
+    if (is_loop) {
+      auto nv = active_vars;
+      nv.push_back(name);
+      for (auto c : children) {
+        c->populate_iter_vars(varmap, nv);
+      }
+    } else {
+      varmap[this] = active_vars;
+      for (auto c : children) {
+        c->populate_iter_vars(varmap, active_vars);
+      }
+    }
+  }
 
-  //set<op*> all_ops() {
-    //set<op*> ops{this};
-    //if (is_loop) {
-      //ops = {};
-    //}
-    //for (auto c : children) {
-      //for (auto op : c->all_ops()) {
-        //ops.insert(op);
-      //}
-    //}
-    //return ops;
-  //}
+  std::set<op*> all_ops() {
+    std::set<op*> ops{this};
+    if (is_loop) {
+      ops = {};
+    }
+    for (auto c : children) {
+      for (auto op : c->all_ops()) {
+        ops.insert(op);
+      }
+    }
+    return ops;
+  }
 
 
-//};
+};
 
-//typedef op loop;
+typedef op loop;
 
-//struct prog {
+struct prog {
 
-  //std::string name;
-  //struct isl_ctx* ctx;
-  //op* root;
-  //set<string> ins;
-  //set<string> outs;
-  //map<string, int> buffer_port_widths;
-  //string compute_unit_file;
-  //map<string, vector<int> > buffer_bounds;
+  std::string name;
+  struct isl_ctx* ctx;
+  op* root;
+  std::set<string> ins;
+  std::set<string> outs;
+  map<string, int> buffer_port_widths;
+  string compute_unit_file;
+  map<string, vector<int> > buffer_bounds;
 
-  //int dim(const string& buf, const int dim) {
-    //if (!(contains_key(buf, buffer_bounds))) {
-      //cout << "No key for: " << buf << " in buffer_bounds" << endl;
-    //}
-    //assert(contains_key(buf, buffer_bounds));
-    //return map_find(buf, buffer_bounds).at(dim);
-  //}
+  int dim(const string& buf, const int dim) {
+    if (!(contains_key(buf, buffer_bounds))) {
+      cout << "No key for: " << buf << " in buffer_bounds" << endl;
+    }
+    assert(contains_key(buf, buffer_bounds));
+    return map_find(buf, buffer_bounds).at(dim);
+  }
 
-  //vector<string> vector_load(const std::string& img, const std::string& rbase, const int ro, const int re,
-      //const std::string& cbase, const int co, const int ce) {
-    //vector<string> conv_loads;
-    //for (int r = ro; r < re; r++) {
-      //for (int c = co; c < ce; c++) {
-        //conv_loads.push_back(img);
-        //conv_loads.push_back(rbase + " + " + to_string(r) + ", " + cbase + " + " + to_string(c));
-      //}
-    //}
-    //return conv_loads;
-  //}
+  vector<string> vector_load(const std::string& img, const std::string& rbase, const int ro, const int re,
+      const std::string& cbase, const int co, const int ce) {
+    vector<string> conv_loads;
+    for (int r = ro; r < re; r++) {
+      for (int c = co; c < ce; c++) {
+        conv_loads.push_back(img);
+        conv_loads.push_back(rbase + " + " + to_string(r) + ", " + cbase + " + " + to_string(c));
+      }
+    }
+    return conv_loads;
+  }
 
-  //loop* add_nest(
-      //const std::string& x, int x_min, int x_max) {
-    //return root->add_nest(x, x_min, x_max);
-  //}
+  loop* add_nest(
+      const std::string& x, int x_min, int x_max) {
+    return root->add_nest(x, x_min, x_max);
+  }
 
-  //loop* add_nest(
-      //const std::string& x, int x_min, int x_max,
-      //const std::string& y, int y_min, int y_max) {
-    //return root->add_nest(x, x_min, x_max, y, y_min, y_max);
-  //}
+  loop* add_nest(
+      const std::string& x, int x_min, int x_max,
+      const std::string& y, int y_min, int y_max) {
+    return root->add_nest(x, x_min, x_max, y, y_min, y_max);
+  }
 
-  //loop* add_nest(
-      //const std::string& x, int x_min, int x_max,
-      //const std::string& y, int y_min, int y_max,
-      //const std::string& c, int c_min, int c_max) {
-    //return root->add_nest(x, x_min, x_max, y, y_min, y_max, c, c_min, c_max);
-  //}
+  loop* add_nest(
+      const std::string& x, int x_min, int x_max,
+      const std::string& y, int y_min, int y_max,
+      const std::string& c, int c_min, int c_max) {
+    return root->add_nest(x, x_min, x_max, y, y_min, y_max, c, c_min, c_max);
+  }
 
-  //bool is_boundary(const std::string& name) {
-    //return elem(name, ins) || elem(name, outs);
-  //}
+  bool is_boundary(const std::string& name) {
+    return elem(name, ins) || elem(name, outs);
+  }
 
-  //void add_output(const std::string& name) {
-    //outs.insert(name);
-  //}
+  void add_output(const std::string& name) {
+    outs.insert(name);
+  }
 
-  //void add_input(const std::string& name) {
-    //ins.insert(name);
-  //}
+  void add_input(const std::string& name) {
+    ins.insert(name);
+  }
 
-  //prog() {
-    //ctx = isl_ctx_alloc();
-    //root = new op();
-    //root->name = "root";
-    //root->ctx = ctx;
-    //root->is_loop = true;
-    //root->start = 0;
-    //root->end_exclusive = 1;
-  //}
+  prog() {
+    ctx = isl_ctx_alloc();
+    root = new op();
+    root->name = "root";
+    root->ctx = ctx;
+    root->is_loop = true;
+    root->start = 0;
+    root->end_exclusive = 1;
+  }
 
-  //~prog() {
-    //isl_ctx_free(ctx);
-  //}
+  ~prog() {
+    isl_ctx_free(ctx);
+  }
 
-  //vector<string> cache_args(op* op) {
-    //vector<string> args;
-    //for (auto cs : op->consume_locs) {
-      //args.push_back(cs.first);
-    //}
-    //for (auto cs : op->produce_locs) {
-      //args.push_back(cs.first);
-    //}
-    //return args;
-  //}
+  vector<string> cache_args(op* op) {
+    vector<string> args;
+    for (auto cs : op->consume_locs) {
+      args.push_back(cs.first);
+    }
+    for (auto cs : op->produce_locs) {
+      args.push_back(cs.first);
+    }
+    return args;
+  }
 
-  //set<op*> all_ops() { return root->all_ops(); }
+  std::set<op*> all_ops() { return root->all_ops(); }
 
-  //op* add_op(const std::string& name) {
-    //return root->add_op(name);
-  //}
+  op* add_op(const std::string& name) {
+    return root->add_op(name);
+  }
 
-  //loop* add_loop(const std::string& name, const int l, const int u) {
-    //return root->add_loop(name, l, u);
-  //}
+  loop* add_loop(const std::string& name, const int l, const int u) {
+    return root->add_loop(name, l, u);
+  }
 
-  //string op_iter(op* const o) {
-    //vector<string> act;
-    //map<op*, vector<string> > ivars;
-    //root->populate_iter_vars(ivars, act);
+  string op_iter(op* const o) {
+    vector<string> act;
+    map<op*, vector<string> > ivars;
+    root->populate_iter_vars(ivars, act);
 
-    //auto iters = map_find(o, ivars);
-    //auto vars = sep_list(iters, "[", "]", ", ");
+    auto iters = map_find(o, ivars);
+    auto vars = sep_list(iters, "[", "]", ", ");
 
-    //return o->name + vars;
-  //}
+    return o->name + vars;
+  }
 
-  //isl_union_set* whole_iteration_domain() {
-    //map<op*, isl_set*> doms = domains();
-    //isl_union_set* whole_d = isl_union_set_read_from_str(ctx, "{ }");
-    //for (auto d : doms) {
-      //whole_d = unn(whole_d, to_uset(d.second));
-    //}
-    //return whole_d;
-  //}
+  isl_union_set* whole_iteration_domain() {
+    map<op*, isl_set*> doms = domains();
+    isl_union_set* whole_d = isl_union_set_read_from_str(ctx, "{ }");
+    for (auto d : doms) {
+      whole_d = unn(whole_d, to_uset(d.second));
+    }
+    return whole_d;
+  }
 
-  //map<op*, vector<string> > iter_vars() {
-    //vector<string> act;
-    //map<op*, vector<string> > ivars;
-    //root->populate_iter_vars(ivars, act);
-    //return ivars;
-  //}
+  map<op*, vector<string> > iter_vars() {
+    vector<string> act;
+    map<op*, vector<string> > ivars;
+    root->populate_iter_vars(ivars, act);
+    return ivars;
+  }
 
-  //map<op*, isl_set*> domains() {
-    //vector<string> sched_coeffs{"0"};
-    //vector<string> sched_domains;
+  map<op*, isl_set*> domains() {
+    vector<string> sched_coeffs{"0"};
+    vector<string> sched_domains;
     
-    //map<op*, vector<string> > idoms;
-    //vector<string> act;
-    //root->populate_iteration_domains(idoms, act);
+    map<op*, vector<string> > idoms;
+    vector<string> act;
+    root->populate_iteration_domains(idoms, act);
     
-    //map<op*, vector<string> > ivars;
-    //root->populate_iter_vars(ivars, act);
+    map<op*, vector<string> > ivars;
+    root->populate_iter_vars(ivars, act);
 
-    //map<op*, isl_set*> doms;
-    //for (auto op : ivars) {
-      ////cout << "Getting op production:" << op.first->name << endl;
-      //auto iters = map_find(op.first, ivars);
-      //auto vars = sep_list(iters, "[", "]", ", ");
+    map<op*, isl_set*> doms;
+    for (auto op : ivars) {
+      //cout << "Getting op production:" << op.first->name << endl;
+      auto iters = map_find(op.first, ivars);
+      auto vars = sep_list(iters, "[", "]", ", ");
 
-      //auto dom = map_find(op.first, idoms);
-      //auto ds = sep_list(dom, "", "", " and ");
+      auto dom = map_find(op.first, idoms);
+      auto ds = sep_list(dom, "", "", " and ");
 
-      //doms[op.first] =
-        //isl_set_read_from_str(ctx, string("{ " + op.first->name + vars + " : " + ds + " }").c_str());
+      doms[op.first] =
+        isl_set_read_from_str(ctx, string("{ " + op.first->name + vars + " : " + ds + " }").c_str());
 
-      ////cout << "Got op..." << endl;
-    //}
-    //return doms;
-  //}
+      //cout << "Got op..." << endl;
+    }
+    return doms;
+  }
 
-  //map<op*, isl_map*> schedules() {
-    //map<op*, isl_map*> scheds;
-    //vector<string> sched_coeffs{"0"};
-    //vector<string> sched_domains;
+  map<op*, isl_map*> schedules() {
+    map<op*, isl_map*> scheds;
+    vector<string> sched_coeffs{"0"};
+    vector<string> sched_domains;
     
-    //map<op*, vector<string> > idoms;
-    //vector<string> act;
-    //root->populate_iteration_domains(idoms, act);
+    map<op*, vector<string> > idoms;
+    vector<string> act;
+    root->populate_iteration_domains(idoms, act);
     
-    //map<op*, vector<string> > vecs;
-    //vector<string> base{"0"};
-    ////cout << "Calling populate sched vectors" << endl;
-    //root->populate_schedule_vectors(vecs, base);
+    map<op*, vector<string> > vecs;
+    vector<string> base{"0"};
+    //cout << "Calling populate sched vectors" << endl;
+    root->populate_schedule_vectors(vecs, base);
 
-    //map<op*, vector<string> > ivars;
-    //root->populate_iter_vars(ivars, act);
+    map<op*, vector<string> > ivars;
+    root->populate_iter_vars(ivars, act);
 
-    //for (auto op : vecs) {
-      //auto iters = map_find(op.first, ivars);
-      //auto vars = sep_list(iters, "[", "]", ", ");
+    for (auto op : vecs) {
+      auto iters = map_find(op.first, ivars);
+      auto vars = sep_list(iters, "[", "]", ", ");
 
-      //auto dom = map_find(op.first, idoms);
-      //auto doms = sep_list(dom, "", "", " and ");
+      auto dom = map_find(op.first, idoms);
+      auto doms = sep_list(dom, "", "", " and ");
 
-      //scheds[op.first] =
-        //isl_map_read_from_str(ctx, string("{ " + op.first->name + vars + " -> " + sep_list(op.second, "[", "]", ", ") + " : " + doms + " }").c_str());
+      scheds[op.first] =
+        isl_map_read_from_str(ctx, string("{ " + op.first->name + vars + " -> " + sep_list(op.second, "[", "]", ", ") + " : " + doms + " }").c_str());
 
-    //}
-    //return scheds;
-  //}
+    }
+    return scheds;
+  }
 
-  //umap* unoptimized_schedule() {
-    //map<op*, isl_map*> prog_ops = schedules();
-    //umap* m = isl_union_map_read_from_str(ctx, "{ }");
-    //for (auto o : prog_ops) {
-      //m = unn(m, to_umap(o.second));
-    //}
-    //return m;
-  //}
+  umap* unoptimized_schedule() {
+    map<op*, isl_map*> prog_ops = schedules();
+    umap* m = isl_union_map_read_from_str(ctx, "{ }");
+    for (auto o : prog_ops) {
+      m = unn(m, to_umap(o.second));
+    }
+    return m;
+  }
 
-  //std::string optimized_loop_nest() {
-    //umap* opt_sched = optimized_codegen();
-    //auto domain = whole_iteration_domain();
-    //auto schedmap = its(opt_sched, domain);
-    //return codegen_c(schedmap);
-  //}
+  std::string optimized_loop_nest() {
+    umap* opt_sched = optimized_codegen();
+    auto domain = whole_iteration_domain();
+    auto schedmap = its(opt_sched, domain);
+    return codegen_c(schedmap);
+  }
 
-  //umap* producer_map() {
-    //auto ivars = iter_vars();
-    //auto doms = domains();
+  umap* producer_map() {
+    auto ivars = iter_vars();
+    auto doms = domains();
 
-    //auto ops = root->all_ops();
-    //auto m = isl_union_map_read_from_str(ctx, "{}");
-    //for (auto op : ops) {
-      //auto vars = map_find(op, ivars);
-      //string ivar_str = sep_list(vars, "[", "]", ", ");
-      //auto dom = map_find(op, doms);
+    auto ops = root->all_ops();
+    auto m = isl_union_map_read_from_str(ctx, "{}");
+    for (auto op : ops) {
+      auto vars = map_find(op, ivars);
+      string ivar_str = sep_list(vars, "[", "]", ", ");
+      auto dom = map_find(op, doms);
 
-      //umap* pmap = isl_union_map_read_from_str(ctx, "{}");
-      //for (auto p : op->produces) {
-        //umap* vmap =
-          //its(isl_union_map_read_from_str(ctx, string("{ " + op->name + ivar_str + " -> " + p + " }").c_str()), to_uset(dom));
-        //pmap = unn(pmap, vmap);
-      //}
-      //m = unn(m, pmap);
-    //}
-    //return m;
-  //}
+      umap* pmap = isl_union_map_read_from_str(ctx, "{}");
+      for (auto p : op->produces) {
+        umap* vmap =
+          its(isl_union_map_read_from_str(ctx, string("{ " + op->name + ivar_str + " -> " + p + " }").c_str()), to_uset(dom));
+        pmap = unn(pmap, vmap);
+      }
+      m = unn(m, pmap);
+    }
+    return m;
+  }
 
-  //umap* producer_map(const std::string& buf_name) {
-    //auto ivars = iter_vars();
-    //auto doms = domains();
+  umap* producer_map(const std::string& buf_name) {
+    auto ivars = iter_vars();
+    auto doms = domains();
 
-    //auto ops = root->all_ops();
-    //auto m = isl_union_map_read_from_str(ctx, "{}");
-    //for (auto op : ops) {
-      //auto vars = map_find(op, ivars);
-      //string ivar_str = sep_list(vars, "[", "]", ", ");
-      //auto dom = map_find(op, doms);
+    auto ops = root->all_ops();
+    auto m = isl_union_map_read_from_str(ctx, "{}");
+    for (auto op : ops) {
+      auto vars = map_find(op, ivars);
+      string ivar_str = sep_list(vars, "[", "]", ", ");
+      auto dom = map_find(op, doms);
 
-      //umap* pmap = isl_union_map_read_from_str(ctx, "{}");
-      //for (auto p : op->produces) {
-        //string buf = take_until(p, "[");
-        //if (buf == buf_name) {
-          //umap* vmap =
-            //its(isl_union_map_read_from_str(ctx, string("{ " + op->name + ivar_str + " -> " + p + " }").c_str()), to_uset(dom));
-          //pmap = unn(pmap, vmap);
-        //}
-      //}
-      //m = unn(m, pmap);
-    //}
-    //return m;
-  //}
+      umap* pmap = isl_union_map_read_from_str(ctx, "{}");
+      for (auto p : op->produces) {
+        string buf = take_until(p, "[");
+        if (buf == buf_name) {
+          umap* vmap =
+            its(isl_union_map_read_from_str(ctx, string("{ " + op->name + ivar_str + " -> " + p + " }").c_str()), to_uset(dom));
+          pmap = unn(pmap, vmap);
+        }
+      }
+      m = unn(m, pmap);
+    }
+    return m;
+  }
 
-  //umap* consumer_map(const std::string& buf_name) {
-    //auto ivars = iter_vars();
-    //auto doms = domains();
+  umap* consumer_map(const std::string& buf_name) {
+    auto ivars = iter_vars();
+    auto doms = domains();
 
-    //auto ops = root->all_ops();
-    //auto m = isl_union_map_read_from_str(ctx, "{}");
-    //for (auto op : ops) {
-      //auto vars = map_find(op, ivars);
-      //string ivar_str = sep_list(vars, "[", "]", ", ");
-      //auto dom = map_find(op, doms);
+    auto ops = root->all_ops();
+    auto m = isl_union_map_read_from_str(ctx, "{}");
+    for (auto op : ops) {
+      auto vars = map_find(op, ivars);
+      string ivar_str = sep_list(vars, "[", "]", ", ");
+      auto dom = map_find(op, doms);
 
-      //umap* pmap = isl_union_map_read_from_str(ctx, "{}");
-      //for (auto p : op->consumes) {
-        //string buf = take_until(p, "[");
-        //if (buf == buf_name) {
-          //umap* vmap =
-            //its(isl_union_map_read_from_str(ctx, string("{ " + op->name + ivar_str + " -> " + p + " }").c_str()), to_uset(dom));
-          //pmap = unn(pmap, vmap);
-        //}
-      //}
-      //m = unn(m, pmap);
-    //}
-    //return m;
-  //}
+      umap* pmap = isl_union_map_read_from_str(ctx, "{}");
+      for (auto p : op->consumes) {
+        string buf = take_until(p, "[");
+        if (buf == buf_name) {
+          umap* vmap =
+            its(isl_union_map_read_from_str(ctx, string("{ " + op->name + ivar_str + " -> " + p + " }").c_str()), to_uset(dom));
+          pmap = unn(pmap, vmap);
+        }
+      }
+      m = unn(m, pmap);
+    }
+    return m;
+  }
 
-  //umap* consumer_map() {
-    //auto ivars = iter_vars();
-    //auto doms = domains();
+  umap* consumer_map() {
+    auto ivars = iter_vars();
+    auto doms = domains();
 
-    //auto ops = root->all_ops();
-    //auto m = isl_union_map_read_from_str(ctx, "{}");
-    //for (auto op : ops) {
-      //auto vars = map_find(op, ivars);
-      //string ivar_str = sep_list(vars, "[", "]", ", ");
-      //auto dom = map_find(op, doms);
+    auto ops = root->all_ops();
+    auto m = isl_union_map_read_from_str(ctx, "{}");
+    for (auto op : ops) {
+      auto vars = map_find(op, ivars);
+      string ivar_str = sep_list(vars, "[", "]", ", ");
+      auto dom = map_find(op, doms);
 
-      //umap* pmap = isl_union_map_read_from_str(ctx, "{}");
-      //for (auto p : op->consumes) {
-        //umap* vmap =
-          //its(isl_union_map_read_from_str(ctx, string("{ " + op->name + ivar_str + " -> " + p + " }").c_str()), to_uset(dom));
-        //pmap = unn(pmap, vmap);
-      //}
-      //m = unn(m, pmap);
-    //}
-    //return m;
-  //}
+      umap* pmap = isl_union_map_read_from_str(ctx, "{}");
+      for (auto p : op->consumes) {
+        umap* vmap =
+          its(isl_union_map_read_from_str(ctx, string("{ " + op->name + ivar_str + " -> " + p + " }").c_str()), to_uset(dom));
+        pmap = unn(pmap, vmap);
+      }
+      m = unn(m, pmap);
+    }
+    return m;
+  }
 
-  //umap* validity_deps() {
+  umap* validity_deps() {
 
+    umap* naive_sched = unoptimized_schedule();
+    auto before = lex_lt(naive_sched, naive_sched);
+    auto domain = whole_iteration_domain();
+    auto writes =
+      its(producer_map(), domain);
+    auto reads =
+      its(consumer_map(), domain);
+
+    isl_union_map *validity =
+      its(dot(writes, inv(reads)), before);
+    return validity;
+  }
+
+  isl_schedule* optimized_schedule() {
     //umap* naive_sched = unoptimized_schedule();
     //auto before = lex_lt(naive_sched, naive_sched);
-    //auto domain = whole_iteration_domain();
+    auto domain = whole_iteration_domain();
     //auto writes =
       //its(producer_map(), domain);
     //auto reads =
       //its(consumer_map(), domain);
 
-    //isl_union_map *validity =
-      //its(dot(writes, inv(reads)), before);
-    //return validity;
-  //}
+    isl_union_map *validity = validity_deps();
+    isl_union_map *proximity =
+      cpy(validity);
 
-  //isl_schedule* optimized_schedule() {
-    //umap* naive_sched = unoptimized_schedule();
-    //auto before = lex_lt(naive_sched, naive_sched);
-    //auto domain = whole_iteration_domain();
-    //auto writes =
-      //its(producer_map(), domain);
-    //auto reads =
-      //its(consumer_map(), domain);
+    isl_schedule* sched = isl_union_set_compute_schedule(domain, validity, proximity);
+    return sched;
+  }
 
-    //isl_union_map *validity = validity_deps();
-    //isl_union_map *proximity =
-      //cpy(validity);
-
-    //isl_schedule* sched = isl_union_set_compute_schedule(domain, validity, proximity);
-    //return sched;
-  //}
-
-  //isl_union_map* optimized_codegen() {
-    //auto domain = whole_iteration_domain();
+  isl_union_map* optimized_codegen() {
+    auto domain = whole_iteration_domain();
     
-    //isl_schedule* sched = optimized_schedule();
-    //auto schedmap = its(isl_schedule_get_map(sched), domain);
-    ////cout << "Optimized schedule..." << endl;
-    ////cout << codegen_c(schedmap);
-    //return schedmap;
-  //}
+    isl_schedule* sched = optimized_schedule();
+    auto schedmap = its(isl_schedule_get_map(sched), domain);
+    //cout << "Optimized schedule..." << endl;
+    //cout << codegen_c(schedmap);
+    return schedmap;
+  }
 
-  //void unoptimized_codegen() {
-    //umap* sched = unoptimized_schedule();
-    //cout << codegen_c(sched);
-  //}
-//};
+  void unoptimized_codegen() {
+    umap* sched = unoptimized_schedule();
+    cout << codegen_c(sched);
+  }
+};
 
 //void generate_op_code(map<string, UBuffer>& buffers, op* op) {
   //assert(op->func != "");
@@ -3360,93 +3362,93 @@ isl_union_pw_qpolynomial_fold* upper_bound(isl_union_pw_qpolynomial* range_card)
   //regression_test(prg);
 //}
 
-//string add_conv_stage(prog& prg, const std::string& inbuffer) {
-  //int in_rows = prg.dim(inbuffer, 0);
-  //int in_cols = prg.dim(inbuffer, 1);
+string add_conv_stage(prog& prg, const std::string& inbuffer) {
+  int in_rows = prg.dim(inbuffer, 0);
+  int in_cols = prg.dim(inbuffer, 1);
 
-  //int res_rows = in_rows - 2;
-  //int res_cols = in_cols - 2;
+  int res_rows = in_rows - 2;
+  int res_cols = in_cols - 2;
 
-  //string blur = inbuffer + "_blr";
-  //prg.buffer_port_widths[blur] = prg.buffer_port_widths[inbuffer];
-  //prg.buffer_bounds[blur] = {res_rows, res_cols};
+  string blur = inbuffer + "_blr";
+  prg.buffer_port_widths[blur] = prg.buffer_port_widths[inbuffer];
+  prg.buffer_bounds[blur] = {res_rows, res_cols};
  
-  //string rb = blur + "_r";
-  //string rc = blur + "_c";
-  //auto loads = prg.vector_load(inbuffer, rb, 0, 3, rc, 0, 3);
-  //auto ns = prg.add_nest(rb, 0, res_rows, rc, 0, res_cols);
-  //ns->add_op({blur, rb + "," + rc}, "conv_3_3", loads);
+  string rb = blur + "_r";
+  string rc = blur + "_c";
+  auto loads = prg.vector_load(inbuffer, rb, 0, 3, rc, 0, 3);
+  auto ns = prg.add_nest(rb, 0, res_rows, rc, 0, res_cols);
+  ns->add_op({blur, rb + "," + rc}, "conv_3_3", loads);
 
-  //return blur;
-//}
+  return blur;
+}
 
-//string add_conv_stage_out(prog& prg, const std::string& inbuffer) {
-  //int in_rows = prg.dim(inbuffer, 0);
-  //int in_cols = prg.dim(inbuffer, 1);
+string add_conv_stage_out(prog& prg, const std::string& inbuffer) {
+  int in_rows = prg.dim(inbuffer, 0);
+  int in_cols = prg.dim(inbuffer, 1);
 
-  //int res_rows = in_rows - 2;
-  //int res_cols = in_cols - 2;
+  int res_rows = in_rows - 2;
+  int res_cols = in_cols - 2;
 
-  //string blur = inbuffer + "_blr";
-  //prg.buffer_port_widths[blur] = prg.buffer_port_widths[inbuffer];
-  //prg.buffer_bounds[blur] = {res_rows, res_cols};
+  string blur = inbuffer + "_blr";
+  prg.buffer_port_widths[blur] = prg.buffer_port_widths[inbuffer];
+  prg.buffer_bounds[blur] = {res_rows, res_cols};
  
-  //string output = blur;
-  //string out_stream = output + "_out";
-  //prg.buffer_port_widths[out_stream] = prg.buffer_port_widths[output];
-  //prg.buffer_bounds[out_stream] = prg.buffer_bounds[output];
-  //prg.add_output(out_stream);
+  string output = blur;
+  string out_stream = output + "_out";
+  prg.buffer_port_widths[out_stream] = prg.buffer_port_widths[output];
+  prg.buffer_bounds[out_stream] = prg.buffer_bounds[output];
+  prg.add_output(out_stream);
   
-  //string rb = blur + "_r";
-  //string rc = blur + "_c";
-  //auto loads = prg.vector_load(inbuffer, rb, 0, 3, rc, 0, 3);
-  //auto ns = prg.add_nest(rb, 0, res_rows, rc, 0, res_cols);
-  //ns->add_op({blur, rb + "," + rc}, "conv_3_3", loads);
-  //ns->store({out_stream, rb + ", " + rc}, {output, rb + ", " + rc});
+  string rb = blur + "_r";
+  string rc = blur + "_c";
+  auto loads = prg.vector_load(inbuffer, rb, 0, 3, rc, 0, 3);
+  auto ns = prg.add_nest(rb, 0, res_rows, rc, 0, res_cols);
+  ns->add_op({blur, rb + "," + rc}, "conv_3_3", loads);
+  ns->store({out_stream, rb + ", " + rc}, {output, rb + ", " + rc});
 
-  //return out_stream;
-//}
+  return out_stream;
+}
 
-//string add_gaussian_stage(prog& prg, const std::string& inbuffer) {
+string add_gaussian_stage(prog& prg, const std::string& inbuffer) {
 
-  //int in_rows = prg.dim(inbuffer, 0);
-  //int in_cols = prg.dim(inbuffer, 1);
+  int in_rows = prg.dim(inbuffer, 0);
+  int in_cols = prg.dim(inbuffer, 1);
 
-  //int res_rows = in_rows - 2;
-  //int res_cols = in_cols - 2;
+  int res_rows = in_rows - 2;
+  int res_cols = in_cols - 2;
 
-  //string blur = inbuffer + "_blr";
-  //prg.buffer_port_widths[blur] = prg.buffer_port_widths[inbuffer];
-  //prg.buffer_bounds[blur] = {res_rows, res_cols};
-  //string rb = blur + "_r";
-  //string rc = blur + "_c";
-  //auto loads = prg.vector_load(inbuffer, rb, 0, 3, rc, 0, 3);
-  //prg.add_nest(rb, 0, res_rows, rc, 0, res_cols)->add_op({blur, rb + "," + rc}, "conv_3_3", loads);
+  string blur = inbuffer + "_blr";
+  prg.buffer_port_widths[blur] = prg.buffer_port_widths[inbuffer];
+  prg.buffer_bounds[blur] = {res_rows, res_cols};
+  string rb = blur + "_r";
+  string rc = blur + "_c";
+  auto loads = prg.vector_load(inbuffer, rb, 0, 3, rc, 0, 3);
+  prg.add_nest(rb, 0, res_rows, rc, 0, res_cols)->add_op({blur, rb + "," + rc}, "conv_3_3", loads);
 
-  //string ds = blur + "_ds";
-  //string dr = ds + "_r";
-  //string dc = ds + "_c";
-  //prg.buffer_port_widths[ds] = prg.buffer_port_widths[inbuffer];
-  //prg.buffer_bounds[ds] = {res_rows / 2, res_cols / 2};
-  //prg.add_nest(dr, 0, res_rows / 2, dc, 0, res_cols / 2)->
-    //add_op({ds, dr + ", " + dc}, "id", {blur, "2*" + dr + ", 2*" + dc});
+  string ds = blur + "_ds";
+  string dr = ds + "_r";
+  string dc = ds + "_c";
+  prg.buffer_port_widths[ds] = prg.buffer_port_widths[inbuffer];
+  prg.buffer_bounds[ds] = {res_rows / 2, res_cols / 2};
+  prg.add_nest(dr, 0, res_rows / 2, dc, 0, res_cols / 2)->
+    add_op({ds, dr + ", " + dc}, "id", {blur, "2*" + dr + ", 2*" + dc});
 
-  //return ds;
-//}
+  return ds;
+}
 
-//void write_out(prog& prg, const std::string& output) {
-  //string out_stream = output + "_out";
-  //prg.buffer_port_widths[out_stream] = prg.buffer_port_widths[output];
-  //prg.buffer_bounds[out_stream] = prg.buffer_bounds[output];
-  //prg.add_output(out_stream);
+void write_out(prog& prg, const std::string& output) {
+  string out_stream = output + "_out";
+  prg.buffer_port_widths[out_stream] = prg.buffer_port_widths[output];
+  prg.buffer_bounds[out_stream] = prg.buffer_bounds[output];
+  prg.add_output(out_stream);
 
-  //int res_rows = prg.dim(output, 0);
-  //int res_cols = prg.dim(output, 1);
+  int res_rows = prg.dim(output, 0);
+  int res_cols = prg.dim(output, 1);
 
-  //string r = out_stream + "_r";
-  //string c = out_stream + "_c";
-  //prg.add_nest(r, 0, res_rows, c, 0, res_cols)->store({out_stream, r + ", " + c}, {output, r + ", " + c});
-//}
+  string r = out_stream + "_r";
+  string c = out_stream + "_c";
+  prg.add_nest(r, 0, res_rows, c, 0, res_cols)->store({out_stream, r + ", " + c}, {output, r + ", " + c});
+}
 
 //void gaussian_pyramid_test() {
   //prog prg;
@@ -3571,27 +3573,30 @@ isl_union_pw_qpolynomial_fold* upper_bound(isl_union_pw_qpolynomial* range_card)
   //regression_test(prg);
 //}
 
-//void blur_and_downsample_test() {
-  //prog prg;
-  //prg.compute_unit_file = "conv_3x3.h";
-  //prg.name = "blur_and_downsample";
-  //prg.add_input("in");
-  //prg.add_output("out");
-  //prg.buffer_port_widths["I"] = 32;
-  //int img_size = 15;
-  //prg.buffer_bounds["I"] = {img_size, img_size};
+void blur_and_downsample_test() {
+  prog prg;
+  prg.compute_unit_file = "conv_3x3.h";
+  prg.name = "blur_and_downsample";
+  prg.add_input("in");
+  prg.add_output("out");
+  prg.buffer_port_widths["I"] = 32;
+  int img_size = 15;
+  prg.buffer_bounds["I"] = {img_size, img_size};
 
-  ////prg.buffer_port_widths["blurred_0"] = 32;
+  //prg.buffer_port_widths["blurred_0"] = 32;
 
-  //prg.add_nest("pr", 0, img_size, "pc", 0, img_size)->store({"I", "pr, pc"}, {"in", "pr, pc"});
-  //string bds = add_gaussian_stage(prg, "I");
-  //string cv = add_conv_stage(prg, bds);
-  //write_out(prg, cv);
+  prg.add_nest("pr", 0, img_size, "pc", 0, img_size)->store({"I", "pr, pc"}, {"in", "pr, pc"});
+  string bds = add_gaussian_stage(prg, "I");
+  string cv = add_conv_stage(prg, bds);
+  write_out(prg, cv);
 
-  ////write_out(prg, bds);
+  cout << "Domain: " << str(prg.whole_iteration_domain()) << endl;
+  internal_assert(false);
+
+  //write_out(prg, bds);
   //regression_test(prg);
 
-//}
+}
 
 ////int main(int argc, char** argv) {
 

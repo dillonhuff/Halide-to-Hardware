@@ -565,8 +565,8 @@ public:
 
 
     template<typename D, typename R>
-      set<D> domain(const std::map<D, R>& m) {
-        set<D> d;
+      std::set<D> domain(const std::map<D, R>& m) {
+        std::set<D> d;
         for (auto e : m) {
           d.insert(e.first);
         }
@@ -686,7 +686,7 @@ std::string exprString(const Expr e);
         return contains_key(pt, read_ports);
       }
 
-      set<string> port_names() const {
+      std::set<string> port_names() const {
         auto names = domain(write_ports);
         for (auto n : domain(read_ports)) {
           names.insert(n);
@@ -793,7 +793,7 @@ std::string exprString(const Expr e);
 
       map<string, MemoryConstraints> hwbuffers() const {
         map<string, MemoryConstraints> bufs;
-        set<string> buffer_names = domain<string, vector<const Call*> >(calls);
+        std::set<string> buffer_names = domain<string, vector<const Call*> >(calls);
         for (auto n : domain(provides)) {
           buffer_names.insert(n);
         }
@@ -923,6 +923,28 @@ std::string exprString(const Expr e);
         return true;
       }
   };
+
+  static inline
+  std::string sep_list(const std::vector<string>& strs,
+      const string& ld, const string& rd, const string& mid) {
+    if (strs.size() == 0) {
+      return ld + rd;
+    }
+
+    string s = ld;
+    for (size_t i = 0; i < strs.size(); i++) {
+      s += strs.at(i);
+      if (i < strs.size() - 1) {
+        s += mid;
+      }
+    }
+    return s + rd;
+  }
+
+  static inline
+  std::string comma_list(const std::vector<string>& strs) {
+    return sep_list(strs, "", "", ", ");
+  }
 
   }
 

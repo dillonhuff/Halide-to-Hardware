@@ -3,6 +3,7 @@
 #include "Closure.h"
 #include "CodeGen_C.h"
 #include "HWUtils.h"
+#include "ISL.h"
 #include "RemoveTrivialForLoops.h"
 #include "Simplify.h"
 #include "UnrollLoops.h"
@@ -13,26 +14,6 @@ using namespace std;
 
 namespace Halide {
 namespace Internal {
-
-  std::string sep_list(const std::vector<string>& strs,
-      const string& ld, const string& rd, const string& mid) {
-    if (strs.size() == 0) {
-      return ld + rd;
-    }
-
-    string s = ld;
-    for (size_t i = 0; i < strs.size(); i++) {
-      s += strs.at(i);
-      if (i < strs.size() - 1) {
-        s += mid;
-      }
-    }
-    return s + rd;
-  }
-
-  std::string comma_list(const std::vector<string>& strs) {
-    return sep_list(strs, "", "", ", ");
-  }
 
   class CodeGen_Streaming : public CodeGen_C {
     public:
@@ -55,6 +36,8 @@ namespace Internal {
       void compileStmt(const std::string& n,
           const Stmt& s,
           const map<pair<string, int>, Interval>& bounds) {
+
+        blur_and_downsample_test();
 
         string name = n;
         cout << "Generating code for: " << s << endl;
