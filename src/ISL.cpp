@@ -436,63 +436,63 @@ isl_stat get_const(isl_set* s, isl_qpolynomial* qp, void* user) {
   //return sep_list(set_strings, "(", ")", " || ");
 //}
 
-//isl_stat return_piece(isl_set* domain, isl_qpolynomial* val, void* user) {
-  //vector<pair<isl_set*, isl_qpolynomial*> >* v = (vector<pair<isl_set*, isl_qpolynomial*> >*) user;
-  //v->push_back({domain, val});
-  //return isl_stat_ok;
-//}
+isl_stat return_piece(isl_set* domain, isl_qpolynomial* val, void* user) {
+  vector<pair<isl_set*, isl_qpolynomial*> >* v = (vector<pair<isl_set*, isl_qpolynomial*> >*) user;
+  v->push_back({domain, val});
+  return isl_stat_ok;
+}
 
-//vector<pair<isl_set*, isl_qpolynomial*> >
-//get_pieces(isl_pw_qpolynomial* p) {
-  //vector<pair<isl_set*, isl_qpolynomial*> > terms;
-  //isl_pw_qpolynomial_foreach_piece(p, return_piece, &terms);
-  //return terms;
-//}
+vector<pair<isl_set*, isl_qpolynomial*> >
+get_pieces(isl_pw_qpolynomial* p) {
+  vector<pair<isl_set*, isl_qpolynomial*> > terms;
+  isl_pw_qpolynomial_foreach_piece(p, return_piece, &terms);
+  return terms;
+}
 
-//isl_stat get_pw_qpolynomial_fold(isl_pw_qpolynomial_fold* qp, void* user) {
-  //vector<isl_pw_qpolynomial_fold*>* v = (vector<isl_pw_qpolynomial_fold*>*) user;
-  //v->push_back(qp);
+isl_stat get_pw_qpolynomial_fold(isl_pw_qpolynomial_fold* qp, void* user) {
+  vector<isl_pw_qpolynomial_fold*>* v = (vector<isl_pw_qpolynomial_fold*>*) user;
+  v->push_back(qp);
 
-  //return isl_stat_ok;
-//}
+  return isl_stat_ok;
+}
 
-//isl_stat get_pw_qpolynomial(isl_pw_qpolynomial* qp, void* user) {
-  //vector<isl_pw_qpolynomial*>* v = (vector<isl_pw_qpolynomial*>*) user;
-  //v->push_back(qp);
+isl_stat get_pw_qpolynomial(isl_pw_qpolynomial* qp, void* user) {
+  vector<isl_pw_qpolynomial*>* v = (vector<isl_pw_qpolynomial*>*) user;
+  v->push_back(qp);
 
-  //return isl_stat_ok;
-//}
+  return isl_stat_ok;
+}
 
-//isl_stat return_pieces(isl_pw_qpolynomial* qp, void* user) {
-  //vector<pair<isl_set*, isl_qpolynomial*> >* v = (vector<pair<isl_set*, isl_qpolynomial*> >*) user;
-  //auto pieces = get_pieces(qp);
-  //for (auto p : pieces) {
-    //v->push_back(p);
-  //}
+isl_stat return_pieces(isl_pw_qpolynomial* qp, void* user) {
+  vector<pair<isl_set*, isl_qpolynomial*> >* v = (vector<pair<isl_set*, isl_qpolynomial*> >*) user;
+  auto pieces = get_pieces(qp);
+  for (auto p : pieces) {
+    v->push_back(p);
+  }
 
-  //return isl_stat_ok;
-//}
+  return isl_stat_ok;
+}
 
-//vector<pair<isl_set*, isl_qpolynomial*> >
-//get_pieces(isl_union_pw_qpolynomial* p) {
-  //vector<pair<isl_set*, isl_qpolynomial*> > terms;
-  //isl_union_pw_qpolynomial_foreach_pw_qpolynomial(p, return_pieces, &terms);
-  //return terms;
-//}
+vector<pair<isl_set*, isl_qpolynomial*> >
+get_pieces(isl_union_pw_qpolynomial* p) {
+  vector<pair<isl_set*, isl_qpolynomial*> > terms;
+  isl_union_pw_qpolynomial_foreach_pw_qpolynomial(p, return_pieces, &terms);
+  return terms;
+}
 
-//vector<isl_pw_qpolynomial_fold*>
-//get_polynomial_folds(isl_union_pw_qpolynomial_fold* p) {
-  //vector<isl_pw_qpolynomial_fold*> terms;
-  //isl_union_pw_qpolynomial_fold_foreach_pw_qpolynomial_fold(p, get_pw_qpolynomial_fold, &terms);
-  //return terms;
-//}
+vector<isl_pw_qpolynomial_fold*>
+get_polynomial_folds(isl_union_pw_qpolynomial_fold* p) {
+  vector<isl_pw_qpolynomial_fold*> terms;
+  isl_union_pw_qpolynomial_fold_foreach_pw_qpolynomial_fold(p, get_pw_qpolynomial_fold, &terms);
+  return terms;
+}
 
-//vector<isl_pw_qpolynomial*>
-//get_polynomials(isl_union_pw_qpolynomial* p) {
-  //vector<isl_pw_qpolynomial*> terms;
-  //isl_union_pw_qpolynomial_foreach_pw_qpolynomial(p, get_pw_qpolynomial, &terms);
-  //return terms;
-//}
+vector<isl_pw_qpolynomial*>
+get_polynomials(isl_union_pw_qpolynomial* p) {
+  vector<isl_pw_qpolynomial*> terms;
+  isl_union_pw_qpolynomial_foreach_pw_qpolynomial(p, get_pw_qpolynomial, &terms);
+  return terms;
+}
 
 //isl_stat return_term(isl_term* t, void* user) {
   //vector<isl_term*>* v = (vector<isl_term*>*) user;
@@ -605,34 +605,34 @@ isl_stat get_const(isl_set* s, isl_qpolynomial* qp, void* user) {
   //return cm;
 //}
 
-//int int_lower_bound(isl_union_pw_qpolynomial* range_card) {
-  //int tight;
-  //int* b = &tight;
-  //auto bound = isl_union_pw_qpolynomial_bound(cpy(range_card), isl_fold_min, b);
-  //auto folds  = get_polynomial_folds(bound);
-  //int bint;
-  //if (folds.size() == 0) {
-    //bint = 0;
-  //} else {
-    //assert(folds.size() == 1);
-    //bint = safe_stoi(codegen_c(folds[0]));
-  //}
-  //return bint;
-//}
+int int_lower_bound(isl_union_pw_qpolynomial* range_card) {
+  int tight;
+  int* b = &tight;
+  auto bound = isl_union_pw_qpolynomial_bound(cpy(range_card), isl_fold_min, b);
+  auto folds  = get_polynomial_folds(bound);
+  int bint;
+  if (folds.size() == 0) {
+    bint = 0;
+  } else {
+    assert(folds.size() == 1);
+    bint = safe_stoi(codegen_c(folds[0]));
+  }
+  return bint;
+}
 
-//isl_union_pw_qpolynomial_fold* lower_bound(isl_union_pw_qpolynomial* range_card) {
-  //int tight;
-  //int* b = &tight;
-  //auto bound = isl_union_pw_qpolynomial_bound(cpy(range_card), isl_fold_min, b);
-  //return bound;
-//}
+isl_union_pw_qpolynomial_fold* lower_bound(isl_union_pw_qpolynomial* range_card) {
+  int tight;
+  int* b = &tight;
+  auto bound = isl_union_pw_qpolynomial_bound(cpy(range_card), isl_fold_min, b);
+  return bound;
+}
 
-//isl_union_pw_qpolynomial_fold* upper_bound(isl_union_pw_qpolynomial* range_card) {
-  //int tight;
-  //int* b = &tight;
-  //auto bound = isl_union_pw_qpolynomial_bound(cpy(range_card), isl_fold_max, b);
-  //return bound;
-//}
+isl_union_pw_qpolynomial_fold* upper_bound(isl_union_pw_qpolynomial* range_card) {
+  int tight;
+  int* b = &tight;
+  auto bound = isl_union_pw_qpolynomial_bound(cpy(range_card), isl_fold_max, b);
+  return bound;
+}
 
 //int int_upper_bound(isl_union_pw_qpolynomial* range_card) {
   //int tight;
