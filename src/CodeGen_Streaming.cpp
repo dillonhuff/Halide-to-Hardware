@@ -33,6 +33,7 @@ namespace Internal {
   std::string comma_list(const std::vector<string>& strs) {
     return sep_list(strs, "", "", ", ");
   }
+
   class CodeGen_Streaming : public CodeGen_C {
     public:
 
@@ -51,7 +52,8 @@ namespace Internal {
         return elem(n, external_buffers);
       }
 
-      void compileStmt(const std::string& n, const Stmt& s,
+      void compileStmt(const std::string& n,
+          const Stmt& s,
           const map<pair<string, int>, Interval>& bounds) {
 
         string name = n;

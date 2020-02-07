@@ -1678,8 +1678,9 @@ void small_conv_3_3_test() {
 
   conv(x, y) = 0;
 
-  Func hw_input("hw_input");
-  hw_input(x, y) = cast<uint16_t>(input(x, y));
+  Func hw_input("hw_input"), hw_input_src("hw_input_src");
+  hw_input_src(x, y) = cast<uint16_t>(input(x, y));
+  hw_input(x, y) = cast<uint16_t>(hw_input_src(x, y));
   conv(x, y)  += kernel(r.x, r.y) * hw_input(x + r.x, y + r.y);
 
   Func hw_output("hw_output");
@@ -1688,6 +1689,7 @@ void small_conv_3_3_test() {
 
   Var xi,yi, xo,yo;
 
+  hw_input_src.compute_root();
   hw_input.compute_root();
   hw_output.compute_root();
 
@@ -1733,7 +1735,7 @@ void small_conv_3_3_test() {
     .unroll(r.y, 3);
   conv.linebuffer();
 
-  hw_input.stream_to_accelerator();
+  hw_input_src.stream_to_accelerator();
 
   // Generate CoreIR
   auto context = hwContext();
@@ -3143,13 +3145,14 @@ int main(int argc, char **argv) {
   //ubuffer_conv_3_3_reduce_test();
   //ubuffer_small_conv_3_3_test();
   
+  small_conv_3_3_test();
+  assert(false);
   small_conv_3_3_critical_path_test();
   control_path_test();
   control_path_xy_test();
   shiftRight_test();
   ushift_test();
   arith_test();
-  small_conv_3_3_test();
   pointwise_add_test();
   mod2_test();
   clamp_test();
