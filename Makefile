@@ -169,6 +169,13 @@ LLVM_HAS_NO_RTTI = $(findstring -fno-rtti, $(LLVM_CXX_FLAGS))
 WITH_RTTI ?= $(if $(LLVM_HAS_NO_RTTI),, not-empty)
 RTTI_CXX_FLAGS=$(if $(WITH_RTTI), , -fno-rtti )
 
+# ISL Flags
+BARVINOK_DIR ?= /Users/dillon/Downloads/barvinok-0.41/
+ISL_DIR ?= /Users/dillon/Downloads/barvinok-0.41/isl/
+ISL_CXX_FLAGS = -I$(ISL_DIR) -I$(BARVINOK_DIR) -I/opt/include
+ISL_LD_FLAGS = -L$(ISL_DIR) -L/opt/lib -L /usr/local/lib -lntl -lisl -lbarvinok -lgmp -lpolylibgmp
+COMMON_LD_FLAGS += $(ISL_LD_FLAGS)
+
 # Compiling for CoreIR requires some extra links
 COREIR_DIR ?= $(ROOT_DIR)/../coreir
 FUNCBUF_DIR ?= $(ROOT_DIR)/../BufferMapping/cfunc
@@ -205,6 +212,7 @@ CXX_FLAGS += $(INTROSPECTION_CXX_FLAGS)
 CXX_FLAGS += $(EXCEPTIONS_CXX_FLAGS)
 CXX_FLAGS += $(AMDGPU_CXX_FLAGS)
 CXX_FLAGS += $(COREIR_CXX_FLAGS)
+CXX_FLAGS += $(ISL_CXX_FLAGS)
 
 # This is required on some hosts like powerpc64le-linux-gnu because we may build
 # everything with -fno-exceptions.  Without -funwind-tables, libHalide.so fails
@@ -460,6 +468,7 @@ SOURCE_FILES = \
   IROperator.cpp \
   IRPrinter.cpp \
   IRVisitor.cpp \
+  ISL.cpp \
   JITModule.cpp \
   Lerp.cpp \
   LICM.cpp \
