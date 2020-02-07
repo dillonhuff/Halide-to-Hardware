@@ -15,57 +15,57 @@ using namespace std;
 
 namespace Halide {
   namespace Internal {
-//string take_until(const std::string& s, const std::string& delim) {
-  //std::size_t found = s.find_first_of(delim);
-  //return s.substr(0, found);
-//}
+string take_until(const std::string& s, const std::string& delim) {
+  std::size_t found = s.find_first_of(delim);
+  return s.substr(0, found);
+}
 
-//bool is_number(string s) { 
-  //for (int i = 0; i < s.length(); i++)  {
-    //if (isdigit(s[i]) == false) {
-      //return false; 
-    //}
-  //}  
-  //return true; 
-//} 
+bool is_number(string s) { 
+  for (int i = 0; i < (int) s.length(); i++)  {
+    if (isdigit(s[i]) == false) {
+      return false; 
+    }
+  }  
+  return true; 
+} 
 
-//int safe_stoi(const string s) {
-  //if (is_number(s)) {
-    //return stoi(s);
-  //}
-  //cout << "String: " << s << " is not a number!" << endl;
-  //assert(false);
-  //return -1;
-//}
+int safe_stoi(const string s) {
+  if (is_number(s)) {
+    return stoi(s);
+  }
+  cout << "String: " << s << " is not a number!" << endl;
+  assert(false);
+  return -1;
+}
 
-//string tab(const int n) {
-  //string t = "";
-  //for (int i = 0; i < n; i++) {
-    //t += "\t";
-  //}
-  //return t;
-//}
+string tab(const int n) {
+  string t = "";
+  for (int i = 0; i < n; i++) {
+    t += "\t";
+  }
+  return t;
+}
 
-//bool
-//is_prefix( std::string const& lhs, std::string const& rhs )
-//{
-    //return std::equal(
-        //lhs.begin(),
-        //lhs.begin() + std::min( lhs.size(), rhs.size() ),
-        //rhs.begin() );
-//}
+bool
+is_prefix( std::string const& lhs, std::string const& rhs )
+{
+    return std::equal(
+        lhs.begin(),
+        lhs.begin() + std::min( lhs.size(), rhs.size() ),
+        rhs.begin() );
+}
 
-//template<typename T>
-//T pick(const std::vector<T>& s) {
-  //assert(s.size() > 0);
-  //return *(begin(s));
-//}
+template<typename T>
+T pick(const std::vector<T>& s) {
+  assert(s.size() > 0);
+  return *(begin(s));
+}
 
-//template<typename T>
-//T pick(const std::set<T>& s) {
-  //assert(s.size() > 0);
-  //return *(begin(s));
-//}
+template<typename T>
+T pick(const std::set<T>& s) {
+  assert(s.size() > 0);
+  return *(begin(s));
+}
 
 //std::string sep_list(const std::vector<std::string>& strs, const std::string& ldelim, const std::string& rdelim, const std::string& sep) {
   //string res = ldelim;
@@ -87,256 +87,257 @@ namespace Halide {
   //return sep_list(strs, "", "", ", ");
 //}
 
-//struct CodegenOptions {
-  //bool internal;
-  //bool all_rams;
-  //bool add_dependence_pragmas;
+struct CodegenOptions {
+  bool internal;
+  bool all_rams;
+  bool add_dependence_pragmas;
    
-  //CodegenOptions() : internal(true), all_rams(false), add_dependence_pragmas(true) {}
-//};
+  CodegenOptions() : internal(true), all_rams(false), add_dependence_pragmas(true) {}
+};
 
-//class UBuffer {
-  //public:
-    //struct isl_ctx* ctx;
-    //isl_space* space;
-    //isl_space* map_space;
-    //string name;
+class UBuffer {
+  public:
+    struct isl_ctx* ctx;
+    isl_space* space;
+    isl_space* map_space;
+    string name;
 
-    //std::map<string, bool> isIn;
-    //std::map<string, isl_set*> domain;
-    //std::map<string, isl_map*> access_map;
-    //std::map<string, isl_union_map*> schedule;
-    //std::map<string, vector<string> > port_bundles;
+    std::map<string, bool> isIn;
+    std::map<string, isl_set*> domain;
+    std::map<string, isl_map*> access_map;
+    std::map<string, isl_union_map*> schedule;
+    std::map<string, vector<string> > port_bundles;
 
-    //std::map<string, int> varInds;
+    std::map<string, int> varInds;
 
-    //std::vector<string> physical_addr_vars;
-    //std::vector<string> writer_vars;
-    //std::vector<string> reader_vars;
+    std::vector<string> physical_addr_vars;
+    std::vector<string> writer_vars;
+    std::vector<string> reader_vars;
 
-    //// Map from writer vars to logical addr vars
-    //map<string, isl_map*> write_funcs;
+    // Map from writer vars to logical addr vars
+    map<string, isl_map*> write_funcs;
 
-    //// Map from reader vars to logical addr vars
-    //map<string, isl_map*> read_funcs;
+    // Map from reader vars to logical addr vars
+    map<string, isl_map*> read_funcs;
     
-    //isl_map* physical_address_mapping;
+    isl_map* physical_address_mapping;
 
-    //int port_widths;
+    int port_widths;
 
-    //UBuffer() : port_widths(32) {}
+    UBuffer() : port_widths(32) {}
 
-    //isl_union_map* bundle_access(const std::string& bn) {
-      //auto d = isl_union_map_read_from_str(ctx, "{}");
-      //for (auto pt : port_bundles.at(bn)) {
-        //d = unn(d, cpy(to_umap(access_map.at(pt))));
-      //}
-      //return d;
-    //}
+    isl_union_map* bundle_access(const std::string& bn) {
+      auto d = isl_union_map_read_from_str(ctx, "{}");
+      for (auto pt : port_bundles.at(bn)) {
+        d = unn(d, cpy(to_umap(access_map.at(pt))));
+      }
+      return d;
+    }
 
-    //isl_union_set* bundle_domain(const std::string& bn) {
-      //auto d = isl_union_set_read_from_str(ctx, "{}");
-      //for (auto pt : port_bundles.at(bn)) {
-        //d = unn(d, cpy(to_uset(domain.at(pt))));
-      //}
-      //return d;
-    //}
+    isl_union_set* bundle_domain(const std::string& bn) {
+      auto d = isl_union_set_read_from_str(ctx, "{}");
+      for (auto pt : port_bundles.at(bn)) {
+        d = unn(d, cpy(to_uset(domain.at(pt))));
+      }
+      return d;
+    }
 
-    //int port_width(const std::string& port_name) {
-      //return port_widths;
-    //}
+    int port_width(const std::string& port_name) {
+      return port_widths;
+    }
 
-    //std::string port_type_string() {
-      //if (port_widths == 32) {
-        //return "int";
-      //}
-      //return "hw_uint<" + to_string(port_widths) + ">";
-    //}
-    //std::string port_type_string(const std::string& name) {
-      //if (port_width(name) == 32) {
-        //return "int";
-      //}
-      //return "hw_uint<" + to_string(port_width(name)) + ">";
-    //}
+    std::string port_type_string() {
+      if (port_widths == 32) {
+        return "int";
+      }
+      return "hw_uint<" + to_string(port_widths) + ">";
+    }
+    std::string port_type_string(const std::string& name) {
+      if (port_width(name) == 32) {
+        return "int";
+      }
+      return "hw_uint<" + to_string(port_width(name)) + ">";
+    }
 
-    //int port_bundle_width(const std::string& bundle_name) {
-      //int len = 0;
-      //for (auto pt : map_find(bundle_name, port_bundles)) {
-        //len += port_width(pt);
-      //}
+    int port_bundle_width(const std::string& bundle_name) {
+      int len = 0;
+      for (auto pt : map_find(bundle_name, port_bundles)) {
+        len += port_width(pt);
+      }
 
-      //return len;
-    //}
+      return len;
+    }
 
-    //std::string bundle_type_string(const std::string& bundle_name) {
-      //int len = 0;
-      //for (auto pt : map_find(bundle_name, port_bundles)) {
-        //len += port_width(pt);
-      //}
+    std::string bundle_type_string(const std::string& bundle_name) {
+      int len = 0;
+      for (auto pt : map_find(bundle_name, port_bundles)) {
+        len += port_width(pt);
+      }
 
-      //if (len == 32) {
-        //return "int";
-      //}
-      //return "hw_uint<" + to_string(len) + ">";
-    //}
+      if (len == 32) {
+        return "int";
+      }
+      return "hw_uint<" + to_string(len) + ">";
+    }
 
-    //std::string bundle_stream(const std::string& bundle_name) {
-      //bool input_bundle = isIn.at(pick(port_bundles.at(bundle_name)));
-      //string bundle_type_str = bundle_type_string(bundle_name);
-      //return string(input_bundle ? "Input" : "Output") + "Stream<" + bundle_type_str + " >& " + bundle_name;
-    //}
+    std::string bundle_stream(const std::string& bundle_name) {
+      bool input_bundle = isIn.at(pick(port_bundles.at(bundle_name)));
+      string bundle_type_str = bundle_type_string(bundle_name);
+      return string(input_bundle ? "Input" : "Output") + "Stream<" + bundle_type_str + " >& " + bundle_name;
+    }
 
-    //isl_union_map* global_schedule() {
-      //umap* s = isl_union_map_read_from_str(ctx, "{ }");
-      //for (auto other : schedule) {
-        ////s = unn(s, isl_union_map_from_map(cpy(other.second)));
-        //s = unn(s, (cpy(other.second)));
-      //}
+    isl_union_map* global_schedule() {
+      umap* s = isl_union_map_read_from_str(ctx, "{ }");
+      for (auto other : schedule) {
+        //s = unn(s, isl_union_map_from_map(cpy(other.second)));
+        s = unn(s, (cpy(other.second)));
+      }
 
-      //return s;
-    //}
+      return s;
+    }
 
-    //bool is_out_pt(const std::string& name) const {
-      //return !isIn.at(name);
-    //}
+    bool is_out_pt(const std::string& name) const {
+      return !isIn.at(name);
+    }
 
-    //void add_out_pt(const std::string& name,
-        //isl_set* dm,
-        //isl_map* access,
-        //isl_union_map* sched) {
-      //domain[name] = dm;
-      //access_map[name] = access;
-      //schedule[name] = (sched);
-      //isIn[name] = false;
-    //}
+    void add_out_pt(const std::string& name,
+        isl_set* dm,
+        isl_map* access,
+        isl_union_map* sched) {
+      domain[name] = dm;
+      access_map[name] = access;
+      schedule[name] = (sched);
+      isIn[name] = false;
+    }
 
-    //void add_in_pt(const std::string& name,
-        //isl_set* dm,
-        //isl_map* access,
-        //isl_union_map* sched) {
-      //domain[name] = dm;
-      //access_map[name] = access;
-      //schedule[name] = (sched);
-      //isIn[name] = true;
-    //}
+    void add_in_pt(const std::string& name,
+        isl_set* dm,
+        isl_map* access,
+        isl_union_map* sched) {
+      domain[name] = dm;
+      access_map[name] = access;
+      schedule[name] = (sched);
+      isIn[name] = true;
+    }
     
-    //void add_out_pt(const std::string& name,
-        //isl_set* dm,
-        //isl_map* access,
-        //isl_map* sched) {
-      //domain[name] = dm;
-      //access_map[name] = access;
-      //schedule[name] = to_umap(sched);
-      //isIn[name] = false;
-    //}
+    void add_out_pt(const std::string& name,
+        isl_set* dm,
+        isl_map* access,
+        isl_map* sched) {
+      domain[name] = dm;
+      access_map[name] = access;
+      schedule[name] = to_umap(sched);
+      isIn[name] = false;
+    }
 
-    //void add_in_pt(const std::string& name,
-        //isl_set* dm,
-        //isl_map* access,
-        //isl_map* sched) {
-      //domain[name] = dm;
-      //access_map[name] = access;
-      //schedule[name] = to_umap(sched);
-      //isIn[name] = true;
-    //}
+    void add_in_pt(const std::string& name,
+        isl_set* dm,
+        isl_map* access,
+        isl_map* sched) {
+      domain[name] = dm;
+      access_map[name] = access;
+      schedule[name] = to_umap(sched);
+      isIn[name] = true;
+    }
 
-    //void add_out_pt(const std::string& name,
-        //const std::string& dm,
-        //const std::string& access,
-        //const std::string& sched) {
-      //add_pt(name, dm, access, sched);
-      //isIn[name] = false;
-    //}
+    void add_out_pt(const std::string& name,
+        const std::string& dm,
+        const std::string& access,
+        const std::string& sched) {
+      add_pt(name, dm, access, sched);
+      isIn[name] = false;
+    }
 
-    //void add_in_pt(const std::string& name,
-        //const std::string& dm,
-        //const std::string& access,
-        //const std::string& sched) {
-      //add_pt(name, dm, access, sched);
-      //isIn[name] = true;
-    //}
+    void add_in_pt(const std::string& name,
+        const std::string& dm,
+        const std::string& access,
+        const std::string& sched) {
+      add_pt(name, dm, access, sched);
+      isIn[name] = true;
+    }
 
-    //void add_pt(const std::string& name,
-        //const std::string& dm,
-        //const std::string& access,
-        //const std::string& sched) {
-      //domain[name] =
-        //isl_set_read_from_str(ctx, dm.c_str());
-      //access_map[name] =
-        //isl_map_read_from_str(ctx, access.c_str());
-      //schedule[name] =
-        //isl_union_map_read_from_str(ctx, sched.c_str());
-    //}
+    void add_pt(const std::string& name,
+        const std::string& dm,
+        const std::string& access,
+        const std::string& sched) {
+      domain[name] =
+        isl_set_read_from_str(ctx, dm.c_str());
+      access_map[name] =
+        isl_map_read_from_str(ctx, access.c_str());
+      schedule[name] =
+        isl_union_map_read_from_str(ctx, sched.c_str());
+    }
 
-    //vector<string> get_out_bundles() const {
-      //vector<string> outpts;
-      //for (auto m : port_bundles) {
-        //if (is_out_pt(pick(m.second))) {
-          //outpts.push_back(m.first);
-        //}
-      //}
-      //return outpts;
-    //}
+    vector<string> get_out_bundles() const {
+      vector<string> outpts;
+      for (auto m : port_bundles) {
+        if (is_out_pt(pick(m.second))) {
+          outpts.push_back(m.first);
+        }
+      }
+      return outpts;
+    }
 
-    //void set_default_bundles() {
-      //for (auto pt : get_in_ports()) {
-        //port_bundles[pt] = {pt};
-      //}
-      //assert(get_in_bundles().size() >= get_in_ports().size());
-    //}
+    void set_default_bundles() {
+      for (auto pt : get_in_ports()) {
+        port_bundles[pt] = {pt};
+      }
+      assert(get_in_bundles().size() >= get_in_ports().size());
+    }
 
-    //vector<string> get_in_bundles() const {
-      //vector<string> outpts;
-      //for (auto m : port_bundles) {
-        //if (!is_out_pt(pick(m.second))) {
-          //outpts.push_back(m.first);
-        //}
-      //}
-      //return outpts;
-    //}
+    vector<string> get_in_bundles() const {
+      vector<string> outpts;
+      for (auto m : port_bundles) {
+        if (!is_out_pt(pick(m.second))) {
+          outpts.push_back(m.first);
+        }
+      }
+      return outpts;
+    }
 
-    //vector<string> get_in_ports() const {
-      //vector<string> outpts;
-      //for (auto m : isIn) {
-        //if (m.second) {
-          //outpts.push_back(m.first);
-        //}
-      //}
-      //return outpts;
-    //}
+    vector<string> get_in_ports() const {
+      vector<string> outpts;
+      for (auto m : isIn) {
+        if (m.second) {
+          outpts.push_back(m.first);
+        }
+      }
+      return outpts;
+    }
 
-    //vector<string> get_out_ports() const {
-      //vector<string> outpts;
-      //for (auto m : isIn) {
-        //if (!m.second) {
-          //outpts.push_back(m.first);
-        //}
-      //}
-      //return outpts;
-    //}
+    vector<string> get_out_ports() const {
+      vector<string> outpts;
+      for (auto m : isIn) {
+        if (!m.second) {
+          outpts.push_back(m.first);
+        }
+      }
+      return outpts;
+    }
 
-    //string get_in_port() const {
-      //for (auto m : isIn) {
-        //if (m.second) {
-          //return m.first;
-        //}
-      //}
-      //assert(false);
-    //}
+    string get_in_port() const {
+      for (auto m : isIn) {
+        if (m.second) {
+          return m.first;
+        }
+      }
+      assert(false);
+      return "";
+    }
 
-//};
+};
 
-//isl_stat get_const(isl_set* s, isl_qpolynomial* qp, void* user) {
-  //vector<int>* vals = (vector<int>*) user;
+isl_stat get_const(isl_set* s, isl_qpolynomial* qp, void* user) {
+  vector<int>* vals = (vector<int>*) user;
 
-  //isl_val* v = isl_qpolynomial_get_constant_val(qp);
-  //long vs = isl_val_get_num_si(v);
-  //if (vals->size() == 0 ||
-      //vals->back() != vs) {
-    //vals->push_back(vs);
-  //}
-  //return isl_stat_ok;
-//}
+  isl_val* v = isl_qpolynomial_get_constant_val(qp);
+  long vs = isl_val_get_num_si(v);
+  if (vals->size() == 0 ||
+      vals->back() != vs) {
+    vals->push_back(vs);
+  }
+  return isl_stat_ok;
+}
 
 //std::string ReplaceString(std::string subject, const std::string& search,
                           //const std::string& replace) {
